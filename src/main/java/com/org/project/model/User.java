@@ -12,6 +12,9 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 
 import com.org.project.util.PasswordUtil;
+import com.org.project.util.AuthUtil;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 
@@ -24,6 +27,9 @@ public class User {
 	private Integer id;
 
 	@Column(nullable = false)
+	private String name;
+
+	@Column(nullable = false)
 	private String email;
 
 	@Enumerated(EnumType.STRING)
@@ -33,20 +39,20 @@ public class User {
 	@Column(name = "password_hash")
 	private String passwordHash;
 
+	@Column(name = "auth_version")
+	private Integer authVersion;
+
+	@CreationTimestamp
 	@Column(name = "created_at", updatable = false)
 	private Date createdAt;
 
+	@UpdateTimestamp
 	@Column(name = "updated_at")
 	private Date updatedAt;
 
 	@PrePersist
 	protected void onCreate() {
-		createdAt = new Date();
-	}
-
-	@PreUpdate
-	protected void onUpdate() {
-		updatedAt = new Date();
+		authVersion = AuthUtil.generateRandomAuthVersion();
 	}
 
 	public Integer getId() {
@@ -55,6 +61,14 @@ public class User {
 
 	public void setId(Integer id) {
 		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName() {
+		this.name = name;
 	}
 
 	public String getEmail() {
@@ -75,6 +89,14 @@ public class User {
 
 	public String getPasswordHash() {
 		return passwordHash;
+	}
+
+	public Integer getAuthVersion() {
+		return authVersion;
+	}
+
+	public void setAuthVersion(Integer authVersion) {
+		this.authVersion = authVersion;
 	}
 
 	public void setPasswordHash(String password) {
