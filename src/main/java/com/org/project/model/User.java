@@ -9,10 +9,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 
 import com.org.project.util.PasswordUtil;
-import com.org.project.util.AuthUtil;
+import com.org.project.component.AuthUtil;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -26,7 +25,7 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@Column(nullable = false)
+	@Column()
 	private String name;
 
 	@Column(nullable = false)
@@ -67,8 +66,8 @@ public class User {
 		return name;
 	}
 
-	public void setName() {
-		this.name = name;
+	public void setName(String name) {
+		this.name = this.name;
 	}
 
 	public String getEmail() {

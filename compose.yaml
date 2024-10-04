@@ -36,6 +36,9 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
       SPRING_PROFILES_ACTIVE: DEV
       SPRING_FLYWAY_LOCATIONS: filesystem:migrations
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_ACCESS_EXPIRATION_SECONDS: ${JWT_ACCESS_EXPIRATION_SECONDS}
+
     depends_on:
       mysql:
         condition: service_healthy

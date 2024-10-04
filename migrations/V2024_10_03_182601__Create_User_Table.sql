@@ -1,6 +1,6 @@
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(255),
     email VARCHAR(255) NOT NULL,
     provider ENUM('GOOGLE', 'GITHUB', 'LOCAL') NOT NULL,
     password_hash VARCHAR(255) NULL,
