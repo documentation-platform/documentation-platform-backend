@@ -35,7 +35,7 @@ services:
     volumes:
       - ./:/volume_code
     working_dir: /volume_code
-    command: ["./mvnw", "spring-boot:run"]
+    command: bash -c "chmod +x mvnw && ./mvnw spring-boot:run"
     ports:
       - "${SPRING_APP_PORT}:8080"
     environment:
@@ -131,6 +131,8 @@ FROM openjdk:21-jdk-slim
 WORKDIR /app
 
 COPY . /app
+
+RUN chmod +x mvnw
 
 RUN ./mvnw dependency:go-offline
 
