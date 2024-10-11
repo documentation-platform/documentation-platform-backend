@@ -1,0 +1,47 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy-to-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Server
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.EC2_HOST }}
+          USER: ${{ secrets.EC2_USER }}
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
+            cd spring-boot-mysql-docker-template &&
+            git pull origin master &&
+            if ! sudo systemctl is-active --quiet docker; then
+              echo "Docker is not running. Starting Docker..."
+              sudo systemctl start docker
+            fi &&
+            sudo docker compose -f compose.prod.yaml down --remove-orphans &&
+            sudo docker compose -f compose.prod.yaml up --build -d &&
+            echo "Deployment commands executed successfully"
+          '
+
+      - name: Wait for deployment
+        run: |
+          echo "Waiting for 45 seconds to allow the application to start..."
+          sleep 45
+
+      - name: Check deployment
+        env:
+          HOST: ${{ secrets.EC2_HOST }}
+          API_ENDPOINT: ${{ secrets.API_ENDPOINT }}
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://${HOST}:${API_ENDPOINT}/api/health)
+          if [ $response = "200" ]; then
+            echo "Deployment successful!"
+          else
+            echo "Deployment failed!"
+            exit 1
+          fi
