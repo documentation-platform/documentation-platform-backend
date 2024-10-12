@@ -68,7 +68,7 @@ services:
   spring-app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     container_name: spring-boot-prod
     ports:
       - "${SPRING_APP_PORT}:8080"
