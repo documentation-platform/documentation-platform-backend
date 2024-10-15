@@ -53,7 +53,13 @@ This repository serves as a perfect template for starting a backend server with 
    ```
 
 4. Access the application at `http://127.0.0.1:8080` (Port 8080 will be replaced by the value specified in the environment variable {SPRING_APP_PORT}."
-5. To check the server's health, visit: `http://127.0.0.1:8080/api/health` 
+5. To check the server's health, visit: `http://127.0.0.1:8080/api/health`
+
+6. (Optional) To enable automatic reloading of changes in Spring Boot, the configuration is already set up in the project. However, you'll need to adjust some permissions in your editor. For IntelliJ, follow these steps:
+
+- Go to **Settings > Build, Execution, Deployment > Compiler** and enable **Build project automatically**.
+- Then, go to **Advanced Settings** and check **Allow auto-make to start even if the developed application is currently running**.
+
 
 ## Project Structure
 
