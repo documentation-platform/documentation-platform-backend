@@ -24,7 +24,7 @@ public class UserService {
         logger.info("Attempting to save user: {}", userRequest);
 
         // Check if user already exists
-        Optional<User> existingUser = userRepository.findByEmailAndProvider(userRequest.getEmail(), User.Provider.valueOf(userRequest.getProvider().toUpperCase()));
+        Optional<User> existingUser = userRepository.findByEmailAndProvider(userRequest.getEmail(), userRequest.getProvider());
         if (existingUser.isPresent()) {
             logger.error("User already exists with email: {} and provider: {}", userRequest.getEmail(), userRequest.getProvider());
             throw new IllegalArgumentException("User already exists with this email and provider.");
@@ -34,8 +34,11 @@ public class UserService {
         User newUser = new User();
         newUser.setName(userRequest.getName());
         newUser.setEmail(userRequest.getEmail());
-        newUser.setPasswordHash(userRequest.getPassword());
-        newUser.setProvider(User.Provider.valueOf(userRequest.getProvider().toUpperCase()));
+        newUser.setProvider(userRequest.getProvider());
+
+        if (newUser.getProvider() == User.Provider.LOCAL){
+            newUser.setPasswordHash(userRequest.getPassword());
+        }
 
         try {
             User savedUser = userRepository.save(newUser);

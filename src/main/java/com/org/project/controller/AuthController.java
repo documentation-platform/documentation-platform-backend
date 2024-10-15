@@ -6,6 +6,7 @@ import com.org.project.model.auth.RegisterRequest;
 import com.org.project.model.User;
 import com.org.project.service.UserService;
 import com.org.project.component.AuthUtil;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(HttpServletResponse response, @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<String> register(HttpServletResponse response, @Valid @RequestBody RegisterRequest registerRequest) {
         User savedUser = userService.registerUser(registerRequest);
         Integer userId = savedUser.getId();
         Integer authVersion = savedUser.getAuthVersion();
