@@ -9,8 +9,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(HealthCheck.class)
-public class HealthCheckTest {
+@WebMvcTest(HealthCheckController.class)
+public class HealthCheckControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
