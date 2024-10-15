@@ -1,7 +1,7 @@
 package com.org.project.service;
 
 import com.org.project.model.User;
-import com.org.project.model.auth.RegisterRequest;
+import com.org.project.model.auth.RegisterRequestDTO;
 import com.org.project.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     @Transactional
-    public User registerUser(RegisterRequest userRequest) {
+    public User registerUser(RegisterRequestDTO userRequest) {
         logger.info("Attempting to save user: {}", userRequest);
 
         // Check if user already exists
