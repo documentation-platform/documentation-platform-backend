@@ -10,7 +10,7 @@ public class AccessToken {
     public String token;
     public Integer expiration;
 
-    public AccessToken(Integer userId, String jwtAccessSecret, Integer jwtAccessExpirationSeconds) {
+    public AccessToken(String userId, String jwtAccessSecret, Integer jwtAccessExpirationSeconds) {
         Date issuedDate = Date.from(Instant.now());
         Date expiryDate = Date.from(Instant.now().plusSeconds(jwtAccessExpirationSeconds));
 

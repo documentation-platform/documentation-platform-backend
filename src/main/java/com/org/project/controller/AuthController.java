@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -29,27 +32,27 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(HttpServletResponse response, @Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<Map<String, Object>> register(HttpServletResponse response, @Valid @RequestBody RegisterRequest registerRequest) {
         User savedUser = userService.registerUser(registerRequest);
-        Integer userId = savedUser.getId();
+        String userId = savedUser.getId();
         Integer authVersion = savedUser.getAuthVersion();
+
         AccessToken accessToken = authUtil.createAccessToken(userId);
         RefreshToken refreshToken = authUtil.createRefreshToken(userId, authVersion);
 
-        Cookie access_cookie = new Cookie("JWT_Access_Token", accessToken.token);
-        access_cookie.setHttpOnly(true);
-        access_cookie.setSecure(true);
-        access_cookie.setPath("/");
-        access_cookie.setMaxAge(accessToken.expiration);
-        response.addCookie(access_cookie);
+        Cookie access_cookie = authUtil.createTokenCookie("JWT_Access_Token", accessToken.token, accessToken.expiration);
+        Cookie refresh_cookie = authUtil.createTokenCookie("JWT_Refresh_Token", refreshToken.token, refreshToken.expiration);
 
-        Cookie refresh_cookie = new Cookie("JWT_Refresh_Token", refreshToken.token);
-        refresh_cookie.setHttpOnly(true);
-        refresh_cookie.setSecure(true);
-        refresh_cookie.setPath("/");
-        refresh_cookie.setMaxAge(refreshToken.expiration);
+        response.addCookie(access_cookie);
         response.addCookie(refresh_cookie);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("message", "User successfully registered");
+        responseBody.put("id", savedUser.getId());
+        responseBody.put("email", savedUser.getEmail());
+        responseBody.put("provider", savedUser.getProvider());
+        responseBody.put("createdAt", savedUser.getCreatedAt());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseBody);
     }
 }
