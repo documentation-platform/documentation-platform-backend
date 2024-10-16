@@ -52,9 +52,13 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(HttpServletResponse response, @Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
-        User savedUser = userService.registerUser(registerRequestDTO);
-        setAuthCookies(response, savedUser);
-        return createResponse("User successfully registered", HttpStatus.CREATED, savedUser);
+        try {
+            User savedUser = userService.registerUser(registerRequestDTO);
+            setAuthCookies(response, savedUser);
+            return createResponse("User successfully registered", HttpStatus.CREATED, savedUser);
+        } catch (UnauthorizedException e) {
+            return createErrorResponse("Registration failed", HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @PostMapping("/refresh")

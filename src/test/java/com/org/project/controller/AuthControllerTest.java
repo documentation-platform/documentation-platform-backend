@@ -2,6 +2,7 @@ package com.org.project.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.org.project.exception.UnauthorizedException;
+
 import com.org.project.model.User;
 import com.org.project.model.auth.AccessToken;
 import com.org.project.model.auth.LoginRequestDTO;
@@ -10,20 +11,23 @@ import com.org.project.model.auth.RegisterRequestDTO;
 import com.org.project.service.AuthService;
 import com.org.project.service.UserService;
 import com.org.project.component.AuthUtil;
+
 import jakarta.servlet.http.Cookie;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
 public class AuthControllerTest {
@@ -43,6 +47,7 @@ public class AuthControllerTest {
     private ObjectMapper objectMapper;
 
     private User testUser;
+    private Cookie refreshTokenCookie;
 
     @BeforeEach
     void setUp() {
@@ -112,27 +117,27 @@ public class AuthControllerTest {
                     .andExpect(cookie().exists("JWT_Access_Token"))
                     .andExpect(cookie().exists("JWT_Refresh_Token"));
         }
-    }
 
         @Test
-        public void testRefreshSuccess() throws Exception {
-            AccessToken accessToken = new AccessToken("testId", "divyematsBHqHUxi6QD5D811iWH7qNxUW9U/QboseFw=", 3600);
-            RefreshToken refreshToken = new RefreshToken("testId", 1, "divyematsBHqHUxi6QD5D811iWH7qNxUW9U/QboseFw=", 86400);
+        void registerFailsWithInvalidCredentials() throws Exception {
+            RegisterRequestDTO registerRequest = new RegisterRequestDTO("Test", "test.com", "testtest", User.Provider.LOCAL);
 
-            when(authUtil.getRefreshCookie(any())).thenReturn(new jakarta.servlet.http.Cookie("JWT_Refresh_Token", "valid_token"));
+            mockMvc.perform(post("/api/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(registerRequest)))
+                    .andExpect(status().isBadRequest());
+
+        }
+    }
+
+    @Nested
+    class RefreshTests {
+        @Test
+        public void testRefreshSuccess() throws Exception {
+            when(authUtil.getRefreshCookie(any())).thenReturn(refreshTokenCookie);
             when(authUtil.getUserIdFromToken(any())).thenReturn("testId");
             when(userService.getUserFromId("testId")).thenReturn(testUser);
             when(authUtil.isTokenValid(any(), any())).thenReturn(true);
-            when(authUtil.createAccessToken("testId")).thenReturn(accessToken);
-            when(authUtil.createRefreshToken("testId", 1)).thenReturn(refreshToken);
-
-            Cookie accessTokenCookie = new Cookie("JWT_Access_Token", accessToken.token);
-            accessTokenCookie.setMaxAge(3600);
-            Cookie refreshTokenCookie = new Cookie("JWT_Refresh_Token", refreshToken.token);
-            refreshTokenCookie.setMaxAge(86400);
-
-            when(authUtil.createTokenCookie("JWT_Access_Token", accessToken.token, 3600)).thenReturn(accessTokenCookie);
-            when(authUtil.createTokenCookie("JWT_Refresh_Token", refreshToken.token, 86400)).thenReturn(refreshTokenCookie);
 
             mockMvc.perform(post("/api/auth/refresh")
                             .cookie(new jakarta.servlet.http.Cookie("JWT_Refresh_Token", "valid_token")))
@@ -166,6 +171,7 @@ public class AuthControllerTest {
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.message").value("Refresh token expired or invalid"));
         }
+    }
 
     private AccessToken createAccessToken() {
         return new AccessToken("testId", "divyematsBHqHUxi6QD5D811iWH7qNxUW9U/QboseFw=", 3600);
@@ -184,7 +190,7 @@ public class AuthControllerTest {
 
         Cookie accessTokenCookie = new Cookie("JWT_Access_Token", accessToken.token);
         accessTokenCookie.setMaxAge(3600);
-        Cookie refreshTokenCookie = new Cookie("JWT_Refresh_Token", refreshToken.token);
+        refreshTokenCookie = new Cookie("JWT_Refresh_Token", refreshToken.token);
         refreshTokenCookie.setMaxAge(86400);
 
         when(authUtil.createTokenCookie("JWT_Access_Token", accessToken.token, 3600)).thenReturn(accessTokenCookie);
