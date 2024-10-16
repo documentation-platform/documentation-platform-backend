@@ -4,6 +4,7 @@ import com.org.project.exception.UnauthorizedException;
 import com.org.project.model.auth.LoginRequestDTO;
 import com.org.project.model.User;
 import com.org.project.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

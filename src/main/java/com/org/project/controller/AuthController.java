@@ -1,15 +1,12 @@
 package com.org.project.controller;
 
 import com.org.project.exception.UnauthorizedException;
-import com.org.project.model.auth.AccessToken;
-import com.org.project.model.auth.LoginRequestDTO;
-import com.org.project.model.auth.RefreshToken;
-import com.org.project.model.auth.RegisterRequestDTO;
+import com.org.project.model.auth.*;
 import com.org.project.model.User;
 import com.org.project.service.UserService;
 import com.org.project.service.AuthService;
 import com.org.project.component.AuthUtil;
-import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +14,19 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final String ACCESS_TOKEN_COOKIE_NAME = "JWT_Access_Token";
+    private static final String REFRESH_TOKEN_COOKIE_NAME = "JWT_Refresh_Token";
 
     private final UserService userService;
     private final AuthService authService;
@@ -37,50 +40,70 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(HttpServletResponse response, @Valid @RequestBody LoginRequestDTO loginRequestDTO) {
+    public ResponseEntity<Map<String, Object>> login(HttpServletResponse response, @Valid @RequestBody LoginRequestDTO loginRequestDTO) {
         try {
             User user = authService.login(loginRequestDTO);
-
-            String userId = user.getId();
-            Integer authVersion = user.getAuthVersion();
-
-            AccessToken accessToken = authUtil.createAccessToken(userId);
-            RefreshToken refreshToken = authUtil.createRefreshToken(userId, authVersion);
-
-            Cookie access_cookie = authUtil.createTokenCookie("JWT_Access_Token", accessToken.token, accessToken.expiration);
-            Cookie refresh_cookie = authUtil.createTokenCookie("JWT_Refresh_Token", refreshToken.token, refreshToken.expiration);
-
-            response.addCookie(access_cookie);
-            response.addCookie(refresh_cookie);
-
-            return ResponseEntity.ok("Login successful");
+            setAuthCookies(response, user);
+            return createResponse("Login successful", HttpStatus.ACCEPTED, user);
         } catch (UnauthorizedException e) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body(e.getMessage());
+            return createErrorResponse("Login failed", HttpStatus.UNAUTHORIZED);
         }
     }
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(HttpServletResponse response, @Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
         User savedUser = userService.registerUser(registerRequestDTO);
-        String userId = savedUser.getId();
-        Integer authVersion = savedUser.getAuthVersion();
+        setAuthCookies(response, savedUser);
+        return createResponse("User successfully registered", HttpStatus.CREATED, savedUser);
+    }
 
-        AccessToken accessToken = authUtil.createAccessToken(userId);
-        RefreshToken refreshToken = authUtil.createRefreshToken(userId, authVersion);
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, Object>> refresh(HttpServletRequest request, HttpServletResponse response) {
+        Optional<Cookie> refreshCookie = Optional.ofNullable(authUtil.getRefreshCookie(request));
 
-        Cookie access_cookie = authUtil.createTokenCookie("JWT_Access_Token", accessToken.token, accessToken.expiration);
-        Cookie refresh_cookie = authUtil.createTokenCookie("JWT_Refresh_Token", refreshToken.token, refreshToken.expiration);
+        if (refreshCookie.isEmpty()) {
+            return createErrorResponse("Refresh token not found", HttpStatus.UNAUTHORIZED);
+        }
 
-        response.addCookie(access_cookie);
-        response.addCookie(refresh_cookie);
+        String token = refreshCookie.get().getValue();
+        String userId = authUtil.getUserIdFromToken(token);
+        User user = userService.getUserFromId(userId);
 
+        if (!authUtil.isTokenValid(token, user.getAuthVersion())) {
+            return createErrorResponse("Refresh token expired or invalid", HttpStatus.UNAUTHORIZED);
+        }
+
+        setAuthCookies(response, user);
+        return createResponse("User refresh successful", HttpStatus.ACCEPTED, user);
+    }
+
+    private void setAuthCookies(HttpServletResponse response, User user) {
+        AccessToken accessToken = authUtil.createAccessToken(user.getId());
+        RefreshToken refreshToken = authUtil.createRefreshToken(user.getId(), user.getAuthVersion());
+
+        response.addCookie(createCookie(ACCESS_TOKEN_COOKIE_NAME, accessToken.token, accessToken.expiration));
+        response.addCookie(createCookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken.token, refreshToken.expiration));
+    }
+
+    private Cookie createCookie(String name, String value, int expiration) {
+        return authUtil.createTokenCookie(name, value, expiration);
+    }
+
+    private ResponseEntity<Map<String, Object>> createResponse(String message, HttpStatus status, User user) {
         Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("message", "User successfully registered");
-        responseBody.put("id", savedUser.getId());
-        responseBody.put("email", savedUser.getEmail());
-        responseBody.put("provider", savedUser.getProvider());
-        responseBody.put("createdAt", savedUser.getCreatedAt());
+        responseBody.put("message", message);
+        responseBody.put("id", user.getId());
+        responseBody.put("email", user.getEmail());
+        responseBody.put("provider", user.getProvider());
+        if (status == HttpStatus.CREATED) {
+            responseBody.put("createdAt", user.getCreatedAt());
+        }
+        return new ResponseEntity<>(responseBody, status);
+    }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseBody);
+    private ResponseEntity<Map<String, Object>> createErrorResponse(String message, HttpStatus status) {
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("message", message);
+        return new ResponseEntity<>(responseBody, status);
     }
 }
