@@ -2,8 +2,6 @@ package com.org.project.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -16,14 +14,15 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
 public class User {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	@Column(name = "id", length = 36, updatable = false, nullable = false)
+	private String id;
 
 	@Column(nullable = false)
 	private String name;
@@ -54,11 +53,15 @@ public class User {
 		authVersion = AuthUtil.generateRandomAuthVersion();
 	}
 
-	public Integer getId() {
+	public User() {
+		this.id = UUID.randomUUID().toString();
+	}
+
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 

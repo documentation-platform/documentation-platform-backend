@@ -10,7 +10,7 @@ public class RefreshToken {
     public String token;
     public Integer expiration;
 
-    public RefreshToken(Integer userId, Integer authVersion, String jwtRefreshSecret, Integer jwtRefreshExpirationSeconds) {
+    public RefreshToken(String userId, Integer authVersion, String jwtRefreshSecret, Integer jwtRefreshExpirationSeconds) {
         Date issuedDate = Date.from(Instant.now());
         Date expiryDate = Date.from(Instant.now().plusSeconds(jwtRefreshExpirationSeconds));
 

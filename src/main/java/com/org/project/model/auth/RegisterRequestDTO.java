@@ -6,20 +6,20 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class RegisterRequest {
+public class RegisterRequestDTO {
     @NotBlank(message = "Name is required")
-    private String name;
+    private final String name;
 
     @NotBlank(message = "Email is required")
     @Email(message="Invalid email format")
-    private String email;
+    private final String email;
 
-    private String password;
+    private final String password;
 
     @NotNull(message = "Provider is required")
-    private User.Provider provider;
+    private final User.Provider provider;
 
-    public RegisterRequest(String name, String email, String password, User.Provider provider) {
+    public RegisterRequestDTO(String name, String email, String password, User.Provider provider) {
         this.name = name;
         this.email = email;
         this.password = password;
@@ -43,7 +43,7 @@ public class RegisterRequest {
     }
 
     @AssertTrue(message = "Password is required for LOCAL Provider")
-    private boolean isPasswordValidForProvider(){
-        return ((provider == User.Provider.LOCAL) && (password != null)) || ((provider != User.Provider.LOCAL) && (password == null));
+    public boolean isPasswordValidForProvider() {
+        return (provider == User.Provider.LOCAL) == (password != null);
     }
 }
