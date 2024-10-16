@@ -1,11 +1,13 @@
 package com.org.project.controller;
 
+import com.org.project.dto.LoginRequestDTO;
+import com.org.project.dto.RegisterRequestDTO;
 import com.org.project.exception.UnauthorizedException;
 import com.org.project.model.auth.*;
 import com.org.project.model.User;
 import com.org.project.service.UserService;
 import com.org.project.service.AuthService;
-import com.org.project.component.AuthUtil;
+import com.org.project.util.AuthUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

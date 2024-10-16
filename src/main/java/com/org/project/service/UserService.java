@@ -1,7 +1,7 @@
 package com.org.project.service;
 
 import com.org.project.model.User;
-import com.org.project.model.auth.RegisterRequestDTO;
+import com.org.project.dto.RegisterRequestDTO;
 import com.org.project.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;

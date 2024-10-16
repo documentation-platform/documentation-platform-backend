@@ -1,6 +1,6 @@
 package com.org.project.component;
 
-import com.org.project.util.CustomFlywayMigrationStrategy;
+import com.org.project.config.CustomFlywayMigrationStrategy;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationInfoService;

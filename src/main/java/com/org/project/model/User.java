@@ -9,7 +9,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.PrePersist;
 
 import com.org.project.util.PasswordUtil;
-import com.org.project.component.AuthUtil;
+import com.org.project.util.AuthUtil;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
