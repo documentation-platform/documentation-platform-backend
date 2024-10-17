@@ -1,4 +1,4 @@
-package com.org.project.component;
+package com.org.project.util;
 
 import com.org.project.model.auth.AccessToken;
 import com.org.project.model.auth.RefreshToken;

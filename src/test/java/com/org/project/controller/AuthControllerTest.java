@@ -5,12 +5,12 @@ import com.org.project.exception.UnauthorizedException;
 
 import com.org.project.model.User;
 import com.org.project.model.auth.AccessToken;
-import com.org.project.model.auth.LoginRequestDTO;
+import com.org.project.dto.LoginRequestDTO;
 import com.org.project.model.auth.RefreshToken;
-import com.org.project.model.auth.RegisterRequestDTO;
+import com.org.project.dto.RegisterRequestDTO;
 import com.org.project.service.AuthService;
 import com.org.project.service.UserService;
-import com.org.project.component.AuthUtil;
+import com.org.project.util.AuthUtil;
 
 import jakarta.servlet.http.Cookie;
 

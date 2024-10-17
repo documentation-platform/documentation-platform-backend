@@ -1,4 +1,4 @@
-package com.org.project.model.auth;
+package com.org.project.dto;
 
 import com.org.project.model.User;
 

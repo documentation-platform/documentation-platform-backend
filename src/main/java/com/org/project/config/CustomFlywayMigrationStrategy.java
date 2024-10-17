@@ -1,4 +1,4 @@
-package com.org.project.util;
+package com.org.project.config;
 
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
