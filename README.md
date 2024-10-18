@@ -1,6 +1,6 @@
 # Spring Boot Backend Template
 
-This repository serves as a perfect template for starting a backend server with [Spring Boot](https://spring.io/projects/spring-boot), [MySQL](https://www.mysql.com/) database, [Flyway](https://flywaydb.org/) for migrations, and [Docker](https://www.docker.com/) for containerization. It also includes GitHub Actions for CI/CD and deployment to an Ubuntu server (Using [AWS EC2](https://aws.amazon.com/ec2/) as an example).
+This repository serves as a perfect template for starting a backend server with [Spring Boot](https://spring.io/projects/spring-boot), [MySQL](https://www.mysql.com/) database, [Flyway](https://flywaydb.org/) for migrations, and [Docker](https://www.docker.com/) for containerization. It also includes GitHub Actions for running tests and deployment to an Ubuntu server (Using [AWS EC2](https://aws.amazon.com/ec2/) as an example).
 
 ## Operating System Compatibility
 
@@ -19,8 +19,7 @@ This repository serves as a perfect template for starting a backend server with 
 - MySQL database
 - Flyway for database migrations
 - Docker setup for both development and production environments
-- GitHub Actions for CI/CD
-- Automated deployment to a server (using AWS EC2 as an example)
+- GitHub Actions for running tests and deployment to a server
 
 ## Table of Contents
 
@@ -107,13 +106,13 @@ Run tests using Maven:
 ./mvnw test
 ```
 
-CI/CD will automatically run tests for non-main branches.
+Tests will automatically run on new commits for all branches.
 
 ## Deployment
 
 The project includes GitHub Actions workflows for:
 
-1. CI/CD on all branches
+1. Running tests on all branches
 2. Deployment to server for the main branch
 
 See the `.github/workflows/` directory for details.

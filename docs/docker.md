@@ -1,9 +1,8 @@
 # Docker Setup Documentation
 
-This document outlines the Docker configuration for development, production, and CI/CD environments.
+This document outlines the Docker configuration for development or production environments.
 
 **Disclaimer:** All variable values (MYSQL_USER, MYSQL_DATABASE etc.) are pulled from your environment file (.env). Ensure you have properly configured the .env files for each environment (development, production) with the appropriate values.
-This document outlines the Docker configuration for development, production, and CI/CD environments.
 
 ## Development Environment
 
@@ -121,9 +120,9 @@ EXPOSE 8080
 - Builds the application in the first stage
 - Runs the application in a slim JDK image in the second stage
 
-## CI/CD Dockerfile
+## Running Tests Dockerfile
 
-The CI/CD Dockerfile is used in GitHub Actions for running tests:
+The testing Dockerfile is used in GitHub Actions for running tests:
 
 ```dockerfile
 FROM openjdk:21-jdk-slim
@@ -145,4 +144,4 @@ CMD ["./mvnw", "test"]
 - Downloads dependencies offline
 - Runs Maven tests as the default command
 
-This setup provides a comprehensive Docker environment for development, production, and CI/CD processes, ensuring consistency across different stages of the application lifecycle.
+This setup provides a comprehensive Docker environment for development, production, and testing, ensuring consistency across different stages of the application lifecycle.

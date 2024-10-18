@@ -1,4 +1,4 @@
-name: Deploy to Server
+name: Deploy to Virtual Machine
 
 on:
   push:
@@ -9,11 +9,11 @@ jobs:
   deploy-to-server:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to Server
+      - name: Deploy to Virtual Machine
         env:
-          PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          HOST: ${{ secrets.EC2_HOST }}
-          USER: ${{ secrets.EC2_USER }}
+          PRIVATE_KEY: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.VM_HOST }}
+          USER: ${{ secrets.VM_USER }}
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
@@ -36,10 +36,9 @@ jobs:
 
       - name: Check deployment
         env:
-          HOST: ${{ secrets.EC2_HOST }}
-          API_ENDPOINT: ${{ secrets.API_ENDPOINT }}
+          API_URL: ${{ secrets.API_URL }}
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" http://${HOST}:${API_ENDPOINT}/api/health)
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${API_URL}/api/health)
           if [ $response = "200" ]; then
             echo "Deployment successful!"
           else

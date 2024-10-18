@@ -1,11 +1,11 @@
-# CI/CD Testing Guide
+# Running Tests on Deployments Guide
 
-This guide explains the GitHub Actions workflow for running tests in your CI/CD pipeline.
+This guide explains the GitHub Actions workflow for running tests.
 
 ## GitHub Actions Workflow
 
 ```yaml
-name: CI/CD Pipeline
+name: Run Tests
 
 on:
    push:
@@ -74,7 +74,7 @@ jobs:
     - Includes a health check to ensure MySQL is ready before tests run
 
 2. **Docker Build**:
-    - Uses a separate `Dockerfile.pipeline` for CI/CD
+    - Uses a separate `Dockerfile.pipeline` for testing
     - Builds an image named `spring-app-test`
 
 3. **Test Execution**:
@@ -86,8 +86,7 @@ jobs:
 ## Best Practices
 
 - Write thorough unit and integration tests
-- Keep the test database separate from development and production databases
 - Monitor test execution times and optimize when necessary
 - Use code coverage tools to ensure adequate test coverage
 
-This CI/CD pipeline ensures that all code changes are tested automatically, helping to catch issues early in the development process.
+This ensures that all code changes are tested automatically, helping to catch issues early in the development process.

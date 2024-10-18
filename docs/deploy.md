@@ -19,46 +19,54 @@ These variables should be used in your application's configuration to connect to
 ## GitHub Actions Workflow
 
 ```yaml
-name: Deploy to EC2
+name: Deploy to Virtual Machine
 
 on:
-  push:
-    branches:
-      - master
+   push:
+      branches:
+         - master
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to EC2
-        env:
-          PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          HOST: ${{ secrets.EC2_HOST }}
-          USER: ${{ secrets.EC2_USER }}
-        run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
-            cd spring-boot-mysql-docker-template &&
-            git pull origin master &&
-            sudo docker compose -f compose.prod.yaml up --build -d &&
-            echo "Deployment commands executed successfully"
-          '
-      - name: Wait for deployment
-        run: |
-          echo "Waiting for 45 seconds to allow the application to start..."
-          sleep 45
-      - name: Check deployment
-        env:
-          HOST: ${{ secrets.EC2_HOST }}
-          API_ENDPOINT: ${{ secrets.API_ENDPOINT }}
-        run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" http://${HOST}:${API_ENDPOINT}/api/health)
-          if [ $response = "200" ]; then
-            echo "Deployment successful!"
-          else
-            echo "Deployment failed!"
-            exit 1
-          fi
+   deploy-to-server:
+      runs-on: ubuntu-latest
+      steps:
+         - name: Deploy to Virtual Machine
+           env:
+              PRIVATE_KEY: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+              HOST: ${{ secrets.VM_HOST }}
+              USER: ${{ secrets.VM_USER }}
+           run: |
+              echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+              ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
+                cd spring-boot-mysql-docker-template &&
+                git fetch origin master &&
+                git reset --hard origin/master &&
+                git pull origin master &&
+                if ! sudo systemctl is-active --quiet docker; then
+                  echo "Docker is not running. Starting Docker..."
+                  sudo systemctl start docker
+                fi &&
+                sudo docker compose -f compose.prod.yaml down --remove-orphans &&
+                sudo docker compose -f compose.prod.yaml up --build -d &&
+                echo "Deployment commands executed successfully"
+              '
+
+         - name: Wait for deployment
+           run: |
+              echo "Waiting for 45 seconds to allow the application to start..."
+              sleep 45
+
+         - name: Check deployment
+           env:
+              API_ENDPOINT: ${{ secrets.API_URL }}
+           run: |
+              response=$(curl -s -o /dev/null -w "%{http_code}" ${API_URL}/api/health)
+              if [ $response = "200" ]; then
+                echo "Deployment successful!"
+              else
+                echo "Deployment failed!"
+                exit 1
+              fi
 ```
 
 ## Workflow Explanation
@@ -72,9 +80,9 @@ jobs:
     - Waits 45 seconds for the application to start
     - Checks if the application is running by making a request to a health endpoint
 
-## AWS Setup Instructions
+## General Setup Instructions
 
-1. **Launch an EC2 instance**:
+1. **Launch an instance** (e.g., AWS EC2):
     - Go to AWS EC2 dashboard and click "Launch Instance"
     - Choose an Ubuntu Image
     - Select an instance type (t2.micro is often sufficient for small projects)
@@ -85,7 +93,7 @@ jobs:
     - Allow inbound traffic on port 22 for SSH
     - Allow inbound traffic on your application port (e.g., 8080 for Spring Boot)
 
-3. **Set up the EC2 instance**:
+3. **Set up the instance**:
     - SSH into your instance
     - Install Docker and Docker Compose
     - Clone your GitHub repository
@@ -93,24 +101,18 @@ jobs:
 
 4. **Configure GitHub Secrets**:
    In your GitHub repository settings, add these secrets:
-    - `EC2_SSH_PRIVATE_KEY`: The private key for SSH access
-    - `EC2_HOST`: Public DNS or IP of your EC2 instance
-    - `EC2_USER`: Username for SSH (usually 'ec2-user' for Amazon Linux)
-    - `API_ENDPOINT`: The port your application runs on
+    - `VM_SSH_PRIVATE_KEY`: The private key for SSH access
+    - `VM_HOST`: Public DNS or IP of your instance
+    - `VM_USER`: Username for SSH access 
+    - `API_URL`: The url of your API. This is used to check if the deployment was successful
 
 5. **Push to Main Branch or Run Manually**:
     - ```sudo docker compose -f compose.prod.yaml up --build```
 
-6. **Domain Configuration (Optional)**:
-    - Use Route 53 to point your domain to the EC2 instance
-
-7. **Monitoring Setup (Recommended)**:
-    - Use AWS CloudWatch for monitoring and alerts
-
 ## Best Practices
 
-- Secure your EC2 instance and keep GitHub secrets safe
-- Follow AWS best practices for production deployments
+- Secure your instance and keep GitHub secrets safe
+- Follow best practices for production deployments
 - Consider setting up staging environments
 - Implement comprehensive testing before production deployment
 
