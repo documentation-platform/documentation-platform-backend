@@ -1,4 +1,4 @@
-name: Deploy to Virtual Machine
+name: Deploy to Virtual Machines
 
 on:
   push:
@@ -6,42 +6,78 @@ on:
       - main
 
 jobs:
-  deploy-to-server:
+  deploy-to-server-1:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to Virtual Machine
+      - name: Deploy to Virtual Machine 1
         env:
-          PRIVATE_KEY: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          HOST: ${{ secrets.VM_HOST }}
-          USER: ${{ secrets.VM_USER }}
+          PRIVATE_KEY: ${{ secrets.VM1_SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.VM1_HOST }}
+          USER: ${{ secrets.VM1_USER }}
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
-            cd spring-boot-mysql-docker-template &&
-            git fetch origin master &&
-            git reset --hard origin/master &&
+            cd server_code &&
+            git fetch origin main &&
+            git reset --hard origin/main &&
             if ! sudo systemctl is-active --quiet docker; then
               echo "Docker is not running. Starting Docker..."
               sudo systemctl start docker
             fi &&
             sudo docker compose -f compose.prod.yaml down --remove-orphans &&
             sudo docker compose -f compose.prod.yaml up --build -d &&
-            echo "Deployment commands executed successfully"
+            echo "Deployment commands executed successfully on Server 1"
           '
-
       - name: Wait for deployment
         run: |
-          echo "Waiting for 45 seconds to allow the application to start..."
-          sleep 45
-
+          echo "Waiting for 90 seconds to allow the application to start on Server 1..."
+          sleep 90
       - name: Check deployment
         env:
           API_URL: ${{ secrets.API_URL }}
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" ${API_URL}/api/health)
           if [ $response = "200" ]; then
-            echo "Deployment successful!"
+            echo "Deployment successful on Server 1!"
           else
-            echo "Deployment failed!"
+            echo "Deployment failed on Server 1!"
+            exit 1
+          fi
+
+  deploy-to-server-2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Virtual Machine 2
+        env:
+          PRIVATE_KEY: ${{ secrets.VM2_SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.VM2_HOST }}
+          USER: ${{ secrets.VM2_USER }}
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
+            cd server_code &&
+            git fetch origin main &&
+            git reset --hard origin/main &&
+            if ! sudo systemctl is-active --quiet docker; then
+              echo "Docker is not running. Starting Docker..."
+              sudo systemctl start docker
+            fi &&
+            sudo docker compose -f compose.prod.yaml down --remove-orphans &&
+            sudo docker compose -f compose.prod.yaml up --build -d &&
+            echo "Deployment commands executed successfully on Server 2"
+          '
+      - name: Wait for deployment
+        run: |
+          echo "Waiting for 90 seconds to allow the application to start on Server 1..."
+          sleep 90
+      - name: Check deployment
+        env:
+          API_URL: ${{ secrets.API_URL }}
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${API_URL}/api/health)
+          if [ $response = "200" ]; then
+            echo "Deployment successful on Server 2!"
+          else
+            echo "Deployment failed on Server 2!"
             exit 1
           fi
