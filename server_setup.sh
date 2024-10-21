@@ -15,16 +15,39 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce
 sudo systemctl start docker
 sudo systemctl enable docker
 
-# Add current user to docker group
+# Add current user to the docker group
 sudo usermod -aG docker $USER
 
-# Clone GitHub repository
+# Log out and back in for group changes to take effect
+echo "Please log out and back in for the group changes to take effect."
+
+# Clone GitHub repository if it doesn't exist
 read -p "Enter your repository URL: " repo_url
-git clone $repo_url server_code
+git clone "$repo_url" server_code
 
-# Prompt for .env file creation
-echo "Please create a .env file in the server_code directory."
-echo "You can use the following command to edit it:"
-echo "nano server_code/.env"
+chmod +x server_code/server_update.sh
 
-echo "Setup complete."
+# Create a systemd service to run the startup script
+SERVICE_FILE="/etc/systemd/system/docker-start.service"
+cat << EOF | sudo tee $SERVICE_FILE
+[Unit]
+Description=Run Docker Update Script Once on Boot
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=ubuntu
+ExecStart=/home/ubuntu/server_code/server_update.sh
+WorkingDirectory=/home/ubuntu/server_code
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Reload systemd and enable the service
+sudo systemctl daemon-reload
+sudo systemctl enable docker-start.service
+
+echo "Setup complete! The server will now pull the latest code and start the Docker containers on startup."
