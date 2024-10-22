@@ -25,7 +25,8 @@ echo "Please log out and back in for the group changes to take effect."
 read -p "Enter your repository URL: " repo_url
 git clone "$repo_url" server_code
 
-chmod +x server_code/server_update.sh
+mv server_code/server_update.sh ~
+chmod +x server_update.sh
 
 # Create a systemd service to run the startup script
 SERVICE_FILE="/etc/systemd/system/docker-start.service"
@@ -38,7 +39,7 @@ Requires=docker.service
 [Service]
 Type=oneshot
 User=ubuntu
-ExecStart=/home/ubuntu/server_code/server_update.sh
+ExecStart=/home/ubuntu/server_update.sh
 WorkingDirectory=/home/ubuntu/server_code
 RemainAfterExit=yes
 

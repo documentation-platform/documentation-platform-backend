@@ -1,4 +1,5 @@
 #!/bin/bash
+cd server_code
 git config --global --add safe.directory /home/ubuntu/server_code
 git fetch origin main
 git reset --hard origin/main

@@ -1,4 +1,4 @@
-name: Deploy to Virtual Machines
+name: Deploy to Instances
 
 on:
   push:
@@ -6,78 +6,77 @@ on:
       - main
 
 jobs:
-  deploy-to-server-1:
+  deploy:
     runs-on: ubuntu-latest
+    env:
+      OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
+      OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
+      OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+      OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+      OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
+      API_URL: ${{ secrets.API_URL }}
+
     steps:
-      - name: Deploy to Virtual Machine 1
-        env:
-          PRIVATE_KEY: ${{ secrets.VM1_SSH_PRIVATE_KEY }}
-          HOST: ${{ secrets.VM1_HOST }}
-          USER: ${{ secrets.VM1_USER }}
+      - name: Restart Server 1 (Instance 1)
+        uses: oracle-actions/run-oci-cli-command@v1.1.1
+        id: restart_instance_1
+        with:
+          command: "compute instance action --instance-id ${{ secrets.OCI_INSTANCE_ONE_OCID }} --action SOFTRESET"
+
+      - name: Allow time for server to restart
+        run: sleep 240
+
+      - name: Check Server 1 Health
+        uses: oracle-actions/run-oci-cli-command@v1.1.1
+        id: check_instance_1_health
+        with:
+          command: "lb backend-health get --backend-name ${{ secrets.OCI_INSTANCE_ONE_PRIVATE_IP_AND_PORT }} --backend-set-name ${{ secrets.OCI_LB_BACKEND_SET }} --load-balancer-id ${{ secrets.OCI_LB_OCID }}"
+
+      - name: Verify Server 1 Health Status
         run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
-            cd server_code &&
-            git fetch origin main &&
-            git reset --hard origin/main &&
-            if ! sudo systemctl is-active --quiet docker; then
-              echo "Docker is not running. Starting Docker..."
-              sudo systemctl start docker
-            fi &&
-            sudo docker compose -f compose.prod.yaml down --remove-orphans &&
-            sudo docker compose -f compose.prod.yaml up --build -d &&
-            echo "Deployment commands executed successfully on Server 1"
-          '
-      - name: Wait for deployment
-        run: |
-          echo "Waiting for 90 seconds to allow the application to start on Server 1..."
-          sleep 90
-      - name: Check deployment
-        env:
-          API_URL: ${{ secrets.API_URL }}
-        run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" ${API_URL}/api/health)
-          if [ $response = "200" ]; then
-            echo "Deployment successful on Server 1!"
-          else
-            echo "Deployment failed on Server 1!"
+          OUTPUT='${{ steps.check_instance_1_health.outputs.output }}'
+          
+          # Parse the status from data object
+          HEALTH_STATUS=$(echo "$OUTPUT" | jq -r 'fromjson | .data.status')
+          echo "Health Status: $HEALTH_STATUS"
+          if [ "$HEALTH_STATUS" != "OK" ]; then
+            echo "Server 1 health check failed! Status: $HEALTH_STATUS"
             exit 1
           fi
 
-  deploy-to-server-2:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to Virtual Machine 2
-        env:
-          PRIVATE_KEY: ${{ secrets.VM2_SSH_PRIVATE_KEY }}
-          HOST: ${{ secrets.VM2_HOST }}
-          USER: ${{ secrets.VM2_USER }}
+      - name: Restart Server 2 (Instance 2)
+        uses: oracle-actions/run-oci-cli-command@v1.1.1
+        id: restart_instance_2
+        with:
+          command: "compute instance action --instance-id ${{ secrets.OCI_INSTANCE_TWO_OCID }} --action SOFTRESET"
+
+      - name: Allow time for server to restart
+        run: sleep 240
+
+      - name: Check Server 2 Health
+        uses: oracle-actions/run-oci-cli-command@v1.1.1
+        id: check_instance_2_health
+        with:
+          command: "lb backend-health get --backend-name ${{ secrets.OCI_INSTANCE_TWO_PRIVATE_IP_AND_PORT }} --backend-set-name ${{ secrets.OCI_LB_BACKEND_SET }} --load-balancer-id ${{ secrets.OCI_LB_OCID }}"
+
+      - name: Verify Server 2 Health Status
         run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
-            cd server_code &&
-            git fetch origin main &&
-            git reset --hard origin/main &&
-            if ! sudo systemctl is-active --quiet docker; then
-              echo "Docker is not running. Starting Docker..."
-              sudo systemctl start docker
-            fi &&
-            sudo docker compose -f compose.prod.yaml down --remove-orphans &&
-            sudo docker compose -f compose.prod.yaml up --build -d &&
-            echo "Deployment commands executed successfully on Server 2"
-          '
-      - name: Wait for deployment
-        run: |
-          echo "Waiting for 90 seconds to allow the application to start on Server 1..."
-          sleep 90
+          OUTPUT='${{ steps.check_instance_2_health.outputs.output }}'
+          
+          # Parse the status from data object
+          HEALTH_STATUS=$(echo "$OUTPUT" | jq -r 'fromjson | .data.status')
+          echo "Health Status: $HEALTH_STATUS"
+          if [ "$HEALTH_STATUS" != "OK" ]; then
+            echo "Server 2 health check failed! Status: $HEALTH_STATUS"
+            exit 1
+          fi
+
       - name: Check deployment
-        env:
-          API_URL: ${{ secrets.API_URL }}
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" ${API_URL}/api/health)
           if [ $response = "200" ]; then
-            echo "Deployment successful on Server 2!"
+            echo "Deployment successful!"
           else
-            echo "Deployment failed on Server 2!"
+            echo "Deployment failed!"
             exit 1
           fi
