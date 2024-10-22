@@ -1,0 +1,28 @@
+name: Check Main Branch Status
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+jobs:
+  check-main-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for running workflows on main
+        run: |
+          # Get running workflows on main branch
+          running_workflows=$(curl -s \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs?branch=main&status=in_progress" \
+            | jq -r '.workflow_runs[] | select(.name != "Check Main Branch Status") | .html_url')
+          
+          if [ ! -z "$running_workflows" ]; then
+            echo "Error: There are currently running workflows on main branch:"
+            echo "$running_workflows"
+            exit 1
+          fi
+          
+          echo "Main branch is clear for merging"
