@@ -21,14 +21,13 @@ import jakarta.validation.Valid;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private static final String ACCESS_TOKEN_COOKIE_NAME = "JWT_Access_Token";
-    private static final String REFRESH_TOKEN_COOKIE_NAME = "JWT_Refresh_Token";
+    public static final String ACCESS_TOKEN_COOKIE_NAME = "JWT_Access_Token";
+    public static final String REFRESH_TOKEN_COOKIE_NAME = "JWT_Refresh_Token";
 
     private final UserService userService;
     private final AuthService authService;
@@ -65,17 +64,16 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, Object>> refresh(HttpServletRequest request, HttpServletResponse response) {
-        Optional<Cookie> refreshCookie = Optional.ofNullable(authUtil.getRefreshCookie(request));
+        String refreshToken = authUtil.getTokenFromCookie(request, REFRESH_TOKEN_COOKIE_NAME);
 
-        if (refreshCookie.isEmpty()) {
+        if (refreshToken.isEmpty()) {
             return createErrorResponse("Refresh token not found", HttpStatus.UNAUTHORIZED);
         }
 
-        String token = refreshCookie.get().getValue();
-        String userId = authUtil.getUserIdFromToken(token);
+        String userId = authUtil.getUserIdFromToken(refreshToken);
         User user = userService.getUserFromId(userId);
 
-        if (!authUtil.isTokenValid(token, user.getAuthVersion())) {
+        if (!authUtil.isRefreshTokenValid(refreshToken, user.getAuthVersion())) {
             return createErrorResponse("Refresh token expired or invalid", HttpStatus.UNAUTHORIZED);
         }
 

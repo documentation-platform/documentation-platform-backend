@@ -21,6 +21,6 @@ public class WebSecurityConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(requestHandler).addPathPatterns("/private/*");
+        registry.addInterceptor(requestHandler).addPathPatterns("/private/**");
     }
 }

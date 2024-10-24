@@ -134,10 +134,10 @@ public class AuthControllerTest {
     class RefreshTests {
         @Test
         public void testRefreshSuccess() throws Exception {
-            when(authUtil.getRefreshCookie(any())).thenReturn(refreshTokenCookie);
+            when(authUtil.getTokenFromCookie(any(), AuthController.REFRESH_TOKEN_COOKIE_NAME)).thenReturn(refreshTokenCookie.getValue());
             when(authUtil.getUserIdFromToken(any())).thenReturn("testId");
             when(userService.getUserFromId("testId")).thenReturn(testUser);
-            when(authUtil.isTokenValid(any(), any())).thenReturn(true);
+            when(authUtil.isRefreshTokenValid(any(), any())).thenReturn(true);
 
             mockMvc.perform(post("/api/auth/refresh")
                             .cookie(new jakarta.servlet.http.Cookie("JWT_Refresh_Token", "valid_token")))
@@ -152,7 +152,7 @@ public class AuthControllerTest {
 
         @Test
         public void testRefreshFailureNoToken() throws Exception {
-            when(authUtil.getRefreshCookie(any())).thenReturn(null);
+            when(authUtil.getTokenFromCookie(any(), AuthController.REFRESH_TOKEN_COOKIE_NAME)).thenReturn(null);
 
             mockMvc.perform(post("/api/auth/refresh"))
                     .andExpect(status().isUnauthorized())
@@ -161,10 +161,10 @@ public class AuthControllerTest {
 
         @Test
         public void testRefreshFailureInvalidToken() throws Exception {
-            when(authUtil.getRefreshCookie(any())).thenReturn(new jakarta.servlet.http.Cookie("JWT_Refresh_Token", "invalid_token"));
+            when(authUtil.getTokenFromCookie(any(), AuthController.REFRESH_TOKEN_COOKIE_NAME)).thenReturn("invalid_token");
             when(authUtil.getUserIdFromToken(any())).thenReturn("testId");
             when(userService.getUserFromId("testId")).thenReturn(testUser);
-            when(authUtil.isTokenValid(any(), any())).thenReturn(false);
+            when(authUtil.isRefreshTokenValid(any(), any())).thenReturn(false);
 
             mockMvc.perform(post("/api/auth/refresh")
                             .cookie(new jakarta.servlet.http.Cookie("JWT_Refresh_Token", "invalid_token")))

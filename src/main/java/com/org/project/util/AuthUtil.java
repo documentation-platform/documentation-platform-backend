@@ -69,10 +69,30 @@ public class AuthUtil {
     }
 
     /**
-     * Checks if a token is valid or not
+     * Checks if an access token is valid or not
      * @return Boolean
      */
-    public Boolean isTokenValid(String token, Integer authVersion) {
+    public Boolean isAccessTokenValid(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(jwtAccessSecret)
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Date expiration = claims.getExpiration();
+            return expiration.after(new Date());
+        } catch (SignatureException e) {
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Checks if a refresh token is valid or not
+     * @return Boolean
+     */
+    public Boolean isRefreshTokenValid(String token, Integer authVersion) {
         try {
             Claims claims = Jwts.parser()
                     .setSigningKey(jwtAccessSecret)
@@ -94,15 +114,15 @@ public class AuthUtil {
     }
 
     /**
-     * Gets refresh token from the cookie
+     * Gets token from a cookie based on the cookie name passed.
      * @return Cookie
      */
-    public Cookie getRefreshCookie(HttpServletRequest request) {
+    public String getTokenFromCookie(HttpServletRequest request, String cookieName) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("JWT_Refresh_Token".equals(cookie.getName())) {
-                    return cookie;
+                if (cookieName.equals(cookie.getName())) {
+                    return cookie.getValue();
                 }
             }
         }
