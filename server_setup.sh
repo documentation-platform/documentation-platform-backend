@@ -51,4 +51,6 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable docker-start.service
 
+#Gives permission for Github to pull the repo
+sudo chown -R ubuntu:ubuntu /home/ubuntu/server_code
 echo "Setup complete! The server will now pull the latest code and start the Docker containers on startup."
