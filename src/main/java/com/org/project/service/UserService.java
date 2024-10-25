@@ -1,9 +1,11 @@
 package com.org.project.service;
 
+import com.org.project.exception.AccountExistsException;
 import com.org.project.model.User;
 import com.org.project.dto.RegisterRequestDTO;
 import com.org.project.repository.UserRepository;
 
+import com.org.project.util.AuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +23,7 @@ public class UserService {
         Optional<User> existingUser = userRepository.findByEmailAndProvider(userRequest.getEmail(), userRequest.getProvider());
 
         if (existingUser.isPresent()) {
-            throw new IllegalArgumentException("User already exists with this email and provider.");
+            throw new AccountExistsException();
         }
 
         User newUser = new User();
@@ -42,5 +44,11 @@ public class UserService {
 
     public User getUserFromId(String userId) {
         return userRepository.findById(userId);
+    }
+
+    public void updateAuthVersion(String userId) {
+        User user = userRepository.findById(userId);
+        user.setAuthVersion(AuthUtil.generateRandomAuthVersion());
+        userRepository.save(user);
     }
 }

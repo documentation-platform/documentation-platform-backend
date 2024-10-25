@@ -2,6 +2,7 @@ package com.org.project.controller;
 
 import com.org.project.dto.LoginRequestDTO;
 import com.org.project.dto.RegisterRequestDTO;
+import com.org.project.exception.AccountExistsException;
 import com.org.project.exception.UnauthorizedException;
 import com.org.project.model.auth.*;
 import com.org.project.model.User;
@@ -58,6 +59,8 @@ public class AuthController {
             User savedUser = userService.registerUser(registerRequestDTO);
             setAuthCookies(response, savedUser);
             return createResponse("User successfully registered", HttpStatus.CREATED, savedUser);
+        } catch (AccountExistsException e) {
+            return createErrorResponse("User already exists", HttpStatus.CONFLICT);
         } catch (UnauthorizedException e) {
             return createErrorResponse("Registration failed", HttpStatus.UNAUTHORIZED);
         }
@@ -65,7 +68,12 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, Object>> refresh(HttpServletRequest request, HttpServletResponse response) {
+        String accessToken = authUtil.getTokenFromCookie(request, ACCESS_TOKEN_COOKIE_NAME);
         String refreshToken = authUtil.getTokenFromCookie(request, REFRESH_TOKEN_COOKIE_NAME);
+
+        if (accessToken != null) {
+            return createErrorResponse("Access token found, no need to refresh", HttpStatus.TOO_EARLY);
+        }
 
         if (refreshToken == null) {
             return createErrorResponse("Refresh token not found", HttpStatus.UNAUTHORIZED);
@@ -80,6 +88,21 @@ public class AuthController {
 
         setAuthCookies(response, user);
         return createResponse("User refresh successful", HttpStatus.ACCEPTED, user);
+    }
+
+    @Secured
+    @PostMapping("/logout_all")
+    public ResponseEntity<String> logoutAll(HttpServletRequest request, HttpServletResponse response) {
+        String userId = (String) request.getAttribute("user_id");
+
+        try {
+            userService.updateAuthVersion(userId);
+            response.addCookie(createCookie(ACCESS_TOKEN_COOKIE_NAME, "", 0));
+            response.addCookie(createCookie(REFRESH_TOKEN_COOKIE_NAME, "", 0));
+            return new ResponseEntity<>("Logged out from all devices", HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Logout failed", HttpStatus.UNAUTHORIZED);
+        }
     }
 
     private void setAuthCookies(HttpServletResponse response, User user) {

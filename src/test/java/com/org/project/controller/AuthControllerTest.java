@@ -70,7 +70,7 @@ public class AuthControllerTest {
             loginRequest.setProvider(User.Provider.LOCAL);
 
             when(authService.login(any(LoginRequestDTO.class))).thenReturn(testUser);
-            mockMvc.perform(post("/api/auth/login")
+            mockMvc.perform(post("/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(loginRequest)))
                     .andExpect(status().isAccepted())
@@ -91,7 +91,7 @@ public class AuthControllerTest {
 
             when(authService.login(any(LoginRequestDTO.class))).thenThrow(new UnauthorizedException("Invalid credentials"));
 
-            mockMvc.perform(post("/api/auth/login")
+            mockMvc.perform(post("/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(loginRequest)))
                     .andExpect(status().isUnauthorized())
@@ -106,7 +106,7 @@ public class AuthControllerTest {
             RegisterRequestDTO registerRequest = new RegisterRequestDTO("Test", "test@example.com", "testtest", User.Provider.LOCAL);
             when(userService.registerUser(any(RegisterRequestDTO.class))).thenReturn(testUser);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(post("/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(registerRequest)))
                     .andExpect(status().isCreated())
@@ -122,7 +122,7 @@ public class AuthControllerTest {
         void registerFailsWithInvalidCredentials() throws Exception {
             RegisterRequestDTO registerRequest = new RegisterRequestDTO("Test", "test.com", "testtest", User.Provider.LOCAL);
 
-            mockMvc.perform(post("/api/auth/register")
+            mockMvc.perform(post("/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(registerRequest)))
                     .andExpect(status().isBadRequest());
@@ -134,7 +134,7 @@ public class AuthControllerTest {
     class RefreshTests {
         @Test
         public void testRefreshSuccess() throws Exception {
-            when(authUtil.getTokenFromCookie(any(), AuthController.REFRESH_TOKEN_COOKIE_NAME)).thenReturn(refreshTokenCookie.getValue());
+            when(authUtil.getTokenFromCookie(any(), eq(AuthController.REFRESH_TOKEN_COOKIE_NAME))).thenReturn(refreshTokenCookie.getValue());
             when(authUtil.getUserIdFromToken(any())).thenReturn("testId");
             when(userService.getUserFromId("testId")).thenReturn(testUser);
             when(authUtil.isRefreshTokenValid(any(), any())).thenReturn(true);
@@ -152,7 +152,7 @@ public class AuthControllerTest {
 
         @Test
         public void testRefreshFailureNoToken() throws Exception {
-            when(authUtil.getTokenFromCookie(any(), AuthController.REFRESH_TOKEN_COOKIE_NAME)).thenReturn(null);
+            when(authUtil.getTokenFromCookie(any(), eq(AuthController.REFRESH_TOKEN_COOKIE_NAME))).thenReturn(null);
 
             mockMvc.perform(post("/auth/refresh"))
                     .andExpect(status().isUnauthorized())
@@ -161,7 +161,7 @@ public class AuthControllerTest {
 
         @Test
         public void testRefreshFailureInvalidToken() throws Exception {
-            when(authUtil.getTokenFromCookie(any(), AuthController.REFRESH_TOKEN_COOKIE_NAME)).thenReturn("invalid_token");
+            when(authUtil.getTokenFromCookie(any(), eq(AuthController.REFRESH_TOKEN_COOKIE_NAME))).thenReturn("invalid_token");
             when(authUtil.getUserIdFromToken(any())).thenReturn("testId");
             when(userService.getUserFromId("testId")).thenReturn(testUser);
             when(authUtil.isRefreshTokenValid(any(), any())).thenReturn(false);
