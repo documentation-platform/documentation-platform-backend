@@ -1,6 +1,6 @@
-# Spring Boot Backend Template
+# Documentation Platform
 
-This repository serves as a perfect template for starting a backend server with [Spring Boot](https://spring.io/projects/spring-boot), [MySQL](https://www.mysql.com/) database, [Flyway](https://flywaydb.org/) for migrations, and [Docker](https://www.docker.com/) for containerization. It also includes GitHub Actions for running tests and deployment to an Ubuntu server (Using [AWS EC2](https://aws.amazon.com/ec2/) as an example).
+This repository originated from our group's [Spring Boot Template Repo](https://github.com/brezden/spring-boot-mysql-docker-template), which we created to provide a solid foundation for starting this project.
 
 ## Operating System Compatibility
 
