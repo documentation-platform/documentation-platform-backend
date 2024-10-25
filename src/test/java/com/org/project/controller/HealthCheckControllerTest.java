@@ -28,6 +28,6 @@ public class HealthCheckControllerTest {
     public void testHealthCheckEndpoint() throws Exception {
         mockMvc.perform(get("/api/health"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("API Healthy"));
+                .andExpect(content().string("API Is Healthy!"));
     }
 }
