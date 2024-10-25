@@ -17,5 +17,3 @@ ssh -i [filename with oracle ssh] ubuntu@129.146.82.26
 
 ## Running Springboot Project
 ./server_update.sh (goated script)
-
-
