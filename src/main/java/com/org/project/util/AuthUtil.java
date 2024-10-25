@@ -1,5 +1,6 @@
 package com.org.project.util;
 
+import com.org.project.controller.AuthController;
 import com.org.project.model.auth.AccessToken;
 import com.org.project.model.auth.RefreshToken;
 import jakarta.servlet.http.Cookie;
@@ -62,9 +63,14 @@ public class AuthUtil {
         Cookie cookie = new Cookie(cookieName, token);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(expiration);
 
+        if (Objects.equals(cookieName, AuthController.REFRESH_TOKEN_COOKIE_NAME)) {
+            cookie.setPath("/auth/refresh");
+        } else {
+            cookie.setPath("/");
+        }
+
+        cookie.setMaxAge(expiration);
         return cookie;
     }
 

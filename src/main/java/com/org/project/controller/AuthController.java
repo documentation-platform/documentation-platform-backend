@@ -5,6 +5,7 @@ import com.org.project.dto.RegisterRequestDTO;
 import com.org.project.exception.UnauthorizedException;
 import com.org.project.model.auth.*;
 import com.org.project.model.User;
+import com.org.project.security.Secured;
 import com.org.project.service.UserService;
 import com.org.project.service.AuthService;
 import com.org.project.util.AuthUtil;
@@ -23,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
 
     public static final String ACCESS_TOKEN_COOKIE_NAME = "JWT_Access_Token";
@@ -66,7 +67,7 @@ public class AuthController {
     public ResponseEntity<Map<String, Object>> refresh(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = authUtil.getTokenFromCookie(request, REFRESH_TOKEN_COOKIE_NAME);
 
-        if (refreshToken.isEmpty()) {
+        if (refreshToken == null) {
             return createErrorResponse("Refresh token not found", HttpStatus.UNAUTHORIZED);
         }
 

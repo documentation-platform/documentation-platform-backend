@@ -139,7 +139,7 @@ public class AuthControllerTest {
             when(userService.getUserFromId("testId")).thenReturn(testUser);
             when(authUtil.isRefreshTokenValid(any(), any())).thenReturn(true);
 
-            mockMvc.perform(post("/api/auth/refresh")
+            mockMvc.perform(post("/auth/refresh")
                             .cookie(new jakarta.servlet.http.Cookie("JWT_Refresh_Token", "valid_token")))
                     .andExpect(status().isAccepted())
                     .andExpect(jsonPath("$.message").value("User refresh successful"))
@@ -154,7 +154,7 @@ public class AuthControllerTest {
         public void testRefreshFailureNoToken() throws Exception {
             when(authUtil.getTokenFromCookie(any(), AuthController.REFRESH_TOKEN_COOKIE_NAME)).thenReturn(null);
 
-            mockMvc.perform(post("/api/auth/refresh"))
+            mockMvc.perform(post("/auth/refresh"))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.message").value("Refresh token not found"));
         }
@@ -166,7 +166,7 @@ public class AuthControllerTest {
             when(userService.getUserFromId("testId")).thenReturn(testUser);
             when(authUtil.isRefreshTokenValid(any(), any())).thenReturn(false);
 
-            mockMvc.perform(post("/api/auth/refresh")
+            mockMvc.perform(post("/auth/refresh")
                             .cookie(new jakarta.servlet.http.Cookie("JWT_Refresh_Token", "invalid_token")))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.message").value("Refresh token expired or invalid"));
