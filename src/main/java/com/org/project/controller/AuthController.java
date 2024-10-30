@@ -49,7 +49,7 @@ public class AuthController {
             setAuthCookies(response, user);
             return createResponse("Login successful", HttpStatus.ACCEPTED, user);
         } catch (UnauthorizedException e) {
-            return createErrorResponse("Login failed", HttpStatus.UNAUTHORIZED);
+            return createErrorResponse("Login failed", HttpStatus.FORBIDDEN);
         }
     }
 
@@ -88,6 +88,22 @@ public class AuthController {
 
         setAuthCookies(response, user);
         return createResponse("User refresh successful", HttpStatus.ACCEPTED, user);
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Object>> status(HttpServletRequest request) {
+        Boolean isAuthorized = authUtil.isRequestAuthorized(request, ACCESS_TOKEN_COOKIE_NAME);
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("isAuthorized", isAuthorized);
+
+        return new ResponseEntity<>(responseBody, HttpStatus.OK);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
+        response.addCookie(createCookie(ACCESS_TOKEN_COOKIE_NAME, "", 0));
+        response.addCookie(createCookie(REFRESH_TOKEN_COOKIE_NAME, "", 0));
+        return new ResponseEntity<>("Logged out", HttpStatus.ACCEPTED);
     }
 
     @Secured

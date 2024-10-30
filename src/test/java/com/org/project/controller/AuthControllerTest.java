@@ -95,7 +95,7 @@ public class AuthControllerTest {
             mockMvc.perform(post("/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(loginRequest)))
-                    .andExpect(status().isUnauthorized())
+                    .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.message").value("Login failed"));
         }
     }
