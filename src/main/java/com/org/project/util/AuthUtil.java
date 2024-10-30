@@ -120,6 +120,15 @@ public class AuthUtil {
     }
 
     /**
+     * Checks if a request is authorized or not
+     * @return Boolean
+     */
+    public Boolean isRequestAuthorized(HttpServletRequest request, String accessCookieName) {
+        String accessToken = getTokenFromCookie(request, AuthController.ACCESS_TOKEN_COOKIE_NAME);
+        return (accessToken != null && isAccessTokenValid(accessToken));
+    }
+
+    /**
      * Gets token from a cookie based on the cookie name passed.
      * @return Cookie
      */
