@@ -36,7 +36,7 @@ public class RequestHandler implements HandlerInterceptor {
         String accessToken = authUtil.getTokenFromCookie(request, accessCookieName);
 
         if (accessToken != null && authUtil.isAccessTokenValid(accessToken)) {
-            request.setAttribute("user_id", authUtil.getUserIdFromToken(accessToken));
+            request.setAttribute("user_id", authUtil.getUserIdFromAcessToken(accessToken));
             return true;
         }
 
