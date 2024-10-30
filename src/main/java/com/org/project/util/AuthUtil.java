@@ -12,6 +12,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureException;
 import java.util.Date;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
@@ -28,6 +29,9 @@ public class AuthUtil {
 
     @Value("${JWT_REFRESH_EXPIRATION_SECONDS}")
     private Integer jwtRefreshExpirationSeconds;
+
+    @Value("${JWT_COOKIE_SAME_SITE}")
+    private String jwtCookieSameSite;
 
     private static final Random RANDOM = new Random();
 
@@ -59,10 +63,11 @@ public class AuthUtil {
      * Generates a cookie that includes the token
      * @return Cookie with the token
      */
-    public Cookie createTokenCookie(String cookieName, String token, Integer expiration){
+    public Cookie createTokenCookie(String cookieName, String token){
         Cookie cookie = new Cookie(cookieName, token);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
+        cookie.setAttribute("SameSite", jwtCookieSameSite == null ? "Lax" : jwtCookieSameSite);
 
         if (Objects.equals(cookieName, AuthController.REFRESH_TOKEN_COOKIE_NAME)) {
             cookie.setPath("/auth/refresh");
@@ -70,7 +75,6 @@ public class AuthUtil {
             cookie.setPath("/");
         }
 
-        cookie.setMaxAge(expiration);
         return cookie;
     }
 
@@ -95,13 +99,13 @@ public class AuthUtil {
     }
 
     /**
-     * Checks if a refresh token is valid or not
+     * Checks if a refresh token auth version is valid or not
      * @return Boolean
      */
-    public Boolean isRefreshTokenValid(String token, Integer authVersion) {
+    public Boolean isRefreshTokenAuthVersionValid(String token, Integer authVersion) {
         try {
             Claims claims = Jwts.parser()
-                    .setSigningKey(jwtAccessSecret)
+                    .setSigningKey(jwtRefreshSecret)
                     .parseClaimsJws(token)
                     .getBody();
 
@@ -120,12 +124,35 @@ public class AuthUtil {
     }
 
     /**
-     * Checks if a request is authorized or not
+     * Checks if a refresh token is valid or not
      * @return Boolean
      */
-    public Boolean isRequestAuthorized(HttpServletRequest request, String accessCookieName) {
+    public Boolean isRefreshTokenValid(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(jwtRefreshSecret)
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Date expiration = claims.getExpiration();
+            return expiration.after(new Date());
+        } catch (SignatureException e) {
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Checks if a request is authorized or not and if the user was previously authorized
+     * @return Map of Boolean values (isAuthorized, previouslyAuthorized)
+     */
+    public List<Boolean> isRequestAuthorized(HttpServletRequest request, String accessCookieName) {
         String accessToken = getTokenFromCookie(request, AuthController.ACCESS_TOKEN_COOKIE_NAME);
-        return (accessToken != null && isAccessTokenValid(accessToken));
+        Boolean isAuthorized = (accessToken != null && isAccessTokenValid(accessToken));
+        Boolean previouslyAuthorized = (accessToken != null);
+
+        return List.of(isAuthorized, previouslyAuthorized);
     }
 
     /**
@@ -145,12 +172,25 @@ public class AuthUtil {
     }
 
     /**
-     * Get UserId from token
+     * Get UserId from access token
      * @return UserId
      */
-    public String getUserIdFromToken(String token) {
+    public String getUserIdFromAcessToken(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(jwtAccessSecret)
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("user_id", String.class);
+    }
+
+    /**
+     * Get UserId from refresh token
+     * @return UserId
+     */
+    public String getUserIdFromRefreshToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(jwtRefreshSecret)
                 .parseClaimsJws(token)
                 .getBody();
 

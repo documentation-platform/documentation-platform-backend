@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -71,7 +72,7 @@ public class AuthController {
         String accessToken = authUtil.getTokenFromCookie(request, ACCESS_TOKEN_COOKIE_NAME);
         String refreshToken = authUtil.getTokenFromCookie(request, REFRESH_TOKEN_COOKIE_NAME);
 
-        if (accessToken != null) {
+        if (accessToken != null && authUtil.isAccessTokenValid(accessToken)) {
             return createErrorResponse("Access token found, no need to refresh", HttpStatus.TOO_EARLY);
         }
 
@@ -79,11 +80,15 @@ public class AuthController {
             return createErrorResponse("Refresh token not found", HttpStatus.UNAUTHORIZED);
         }
 
-        String userId = authUtil.getUserIdFromToken(refreshToken);
+        if (!authUtil.isRefreshTokenValid(refreshToken)) {
+            return createErrorResponse("Refresh token expired or invalid", HttpStatus.UNAUTHORIZED);
+        }
+
+        String userId = authUtil.getUserIdFromRefreshToken(refreshToken);
         User user = userService.getUserFromId(userId);
 
-        if (!authUtil.isRefreshTokenValid(refreshToken, user.getAuthVersion())) {
-            return createErrorResponse("Refresh token expired or invalid", HttpStatus.UNAUTHORIZED);
+        if (!authUtil.isRefreshTokenAuthVersionValid(refreshToken, user.getAuthVersion())) {
+            return createErrorResponse("Refresh token version invalid", HttpStatus.UNAUTHORIZED);
         }
 
         setAuthCookies(response, user);
@@ -92,17 +97,24 @@ public class AuthController {
 
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> status(HttpServletRequest request) {
-        Boolean isAuthorized = authUtil.isRequestAuthorized(request, ACCESS_TOKEN_COOKIE_NAME);
+        List<Boolean> requestAuthorizedList = authUtil.isRequestAuthorized(request, ACCESS_TOKEN_COOKIE_NAME);
         Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("isAuthorized", isAuthorized);
+        responseBody.put("isAuthorized", requestAuthorizedList.get(0));
+        responseBody.put("previouslyAuthorized", requestAuthorizedList.get(1));
 
         return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) {
-        response.addCookie(createCookie(ACCESS_TOKEN_COOKIE_NAME, "", 0));
-        response.addCookie(createCookie(REFRESH_TOKEN_COOKIE_NAME, "", 0));
+        Cookie accessExpireCookie = createCookie(ACCESS_TOKEN_COOKIE_NAME, "");
+        Cookie refreshExpireCookie = createCookie(REFRESH_TOKEN_COOKIE_NAME, "");
+
+        accessExpireCookie.setMaxAge(0);
+        refreshExpireCookie.setMaxAge(0);
+
+        response.addCookie(accessExpireCookie);
+        response.addCookie(refreshExpireCookie);
         return new ResponseEntity<>("Logged out", HttpStatus.ACCEPTED);
     }
 
@@ -113,8 +125,14 @@ public class AuthController {
 
         try {
             userService.updateAuthVersion(userId);
-            response.addCookie(createCookie(ACCESS_TOKEN_COOKIE_NAME, "", 0));
-            response.addCookie(createCookie(REFRESH_TOKEN_COOKIE_NAME, "", 0));
+            Cookie accessExpireCookie = createCookie(ACCESS_TOKEN_COOKIE_NAME, "");
+            Cookie refreshExpireCookie = createCookie(REFRESH_TOKEN_COOKIE_NAME, "");
+
+            accessExpireCookie.setMaxAge(0);
+            refreshExpireCookie.setMaxAge(0);
+
+            response.addCookie(accessExpireCookie);
+            response.addCookie(refreshExpireCookie);
             return new ResponseEntity<>("Logged out from all devices", HttpStatus.ACCEPTED);
         } catch (Exception e) {
             return new ResponseEntity<>("Logout failed", HttpStatus.UNAUTHORIZED);
@@ -125,12 +143,12 @@ public class AuthController {
         AccessToken accessToken = authUtil.createAccessToken(user.getId());
         RefreshToken refreshToken = authUtil.createRefreshToken(user.getId(), user.getAuthVersion());
 
-        response.addCookie(createCookie(ACCESS_TOKEN_COOKIE_NAME, accessToken.token, accessToken.expiration));
-        response.addCookie(createCookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken.token, refreshToken.expiration));
+        response.addCookie(createCookie(ACCESS_TOKEN_COOKIE_NAME, accessToken.token));
+        response.addCookie(createCookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken.token));
     }
 
-    private Cookie createCookie(String name, String value, int expiration) {
-        return authUtil.createTokenCookie(name, value, expiration);
+    private Cookie createCookie(String name, String value) {
+        return authUtil.createTokenCookie(name, value);
     }
 
     private ResponseEntity<Map<String, Object>> createResponse(String message, HttpStatus status, User user) {

@@ -31,13 +31,11 @@ public class AuthUtilTest {
     public void createTokenCookieTest() {
         String cookieName = "testCookie";
         String token = "testToken";
-        int expiration = 3600;
 
-        Cookie cookie = authUtil.createTokenCookie(cookieName, token, expiration);
+        Cookie cookie = authUtil.createTokenCookie(cookieName, token);
 
         Assertions.assertEquals(cookieName, cookie.getName());
         Assertions.assertEquals(token, cookie.getValue());
-        Assertions.assertEquals(expiration, cookie.getMaxAge());
         Assertions.assertEquals("/", cookie.getPath());
     }
 
@@ -45,13 +43,11 @@ public class AuthUtilTest {
     public void createRefreshTokenTest() {
         String cookieName = AuthController.REFRESH_TOKEN_COOKIE_NAME;
         String token = "testToken";
-        int expiration = 3600;
 
-        Cookie cookie = authUtil.createTokenCookie(cookieName, token, expiration);
+        Cookie cookie = authUtil.createTokenCookie(cookieName, token);
 
         Assertions.assertEquals(cookieName, cookie.getName());
         Assertions.assertEquals(token, cookie.getValue());
-        Assertions.assertEquals(expiration, cookie.getMaxAge());
         Assertions.assertEquals("/auth/refresh", cookie.getPath());
     }
 
@@ -76,7 +72,7 @@ public class AuthUtilTest {
         Integer authVersion = 1;
         String token = authUtil.createRefreshToken(userId, authVersion).token;
 
-        Assertions.assertTrue(authUtil.isRefreshTokenValid(token, authVersion));
+        Assertions.assertTrue(authUtil.isRefreshTokenAuthVersionValid(token, authVersion));
     }
 
     @Test
@@ -85,6 +81,6 @@ public class AuthUtilTest {
         Integer authVersion = 1;
         String token = authUtil.createRefreshToken(userId, authVersion).token;
 
-        Assertions.assertFalse(authUtil.isRefreshTokenValid(token, authVersion + 1));
+        Assertions.assertFalse(authUtil.isRefreshTokenAuthVersionValid(token, authVersion + 1));
     }
 }

@@ -136,9 +136,10 @@ public class AuthControllerTest {
         @Test
         public void testRefreshSuccess() throws Exception {
             when(authUtil.getTokenFromCookie(any(), eq(AuthController.REFRESH_TOKEN_COOKIE_NAME))).thenReturn(refreshTokenCookie.getValue());
-            when(authUtil.getUserIdFromToken(any())).thenReturn("testId");
+            when(authUtil.getUserIdFromRefreshToken(any())).thenReturn("testId");
             when(userService.getUserFromId("testId")).thenReturn(testUser);
-            when(authUtil.isRefreshTokenValid(any(), any())).thenReturn(true);
+            when(authUtil.isRefreshTokenValid(any())).thenReturn(true);
+            when(authUtil.isRefreshTokenAuthVersionValid(any(), any())).thenReturn(true);
 
             mockMvc.perform(post("/auth/refresh")
                             .cookie(new jakarta.servlet.http.Cookie("JWT_Refresh_Token", "valid_token")))
@@ -163,9 +164,10 @@ public class AuthControllerTest {
         @Test
         public void testRefreshFailureInvalidToken() throws Exception {
             when(authUtil.getTokenFromCookie(any(), eq(AuthController.REFRESH_TOKEN_COOKIE_NAME))).thenReturn("invalid_token");
-            when(authUtil.getUserIdFromToken(any())).thenReturn("testId");
+            when(authUtil.getUserIdFromRefreshToken(any())).thenReturn("testId");
             when(userService.getUserFromId("testId")).thenReturn(testUser);
-            when(authUtil.isRefreshTokenValid(any(), any())).thenReturn(false);
+            when(authUtil.isRefreshTokenValid(any())).thenReturn(false);
+            when(authUtil.isRefreshTokenAuthVersionValid(any(), any())).thenReturn(false);
 
             mockMvc.perform(post("/auth/refresh")
                             .cookie(new jakarta.servlet.http.Cookie("JWT_Refresh_Token", "invalid_token")))
@@ -190,11 +192,9 @@ public class AuthControllerTest {
         when(authUtil.createRefreshToken("testId", 1)).thenReturn(refreshToken);
 
         Cookie accessTokenCookie = new Cookie("JWT_Access_Token", accessToken.token);
-        accessTokenCookie.setMaxAge(3600);
         refreshTokenCookie = new Cookie("JWT_Refresh_Token", refreshToken.token);
-        refreshTokenCookie.setMaxAge(86400);
 
-        when(authUtil.createTokenCookie("JWT_Access_Token", accessToken.token, 3600)).thenReturn(accessTokenCookie);
-        when(authUtil.createTokenCookie("JWT_Refresh_Token", refreshToken.token, 86400)).thenReturn(refreshTokenCookie);
+        when(authUtil.createTokenCookie("JWT_Access_Token", accessToken.token)).thenReturn(accessTokenCookie);
+        when(authUtil.createTokenCookie("JWT_Refresh_Token", refreshToken.token)).thenReturn(refreshTokenCookie);
     }
 }
