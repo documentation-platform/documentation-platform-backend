@@ -10,7 +10,9 @@ This repository originated from our group's [Spring Boot Template Repo](https://
 
 - [Testing Guide](docs/testing.md)
 - [Migration Guide](docs/migration.md)
-- [Deployment Guide](docs/deploy.md)
+- [Single Instance Deployment Guide (Previous Strategy)](docs/single-instance-deploy)
+- [Multiple Instance Deployment Guide (Current Strategy)](docs/multiple-instance-deploy.md)
+- [Infrastructure Setup Guide](docs/infrastructure-setup.md)
 - [Docker Guide](docs/docker.md)
 
 ## Features
@@ -39,8 +41,8 @@ This repository originated from our group's [Spring Boot Template Repo](https://
 
 1. Clone this repository:
    ```
-   git clone https://github.com/brezden/spring-boot-mysql-docker-template.git
-   cd spring-boot-mysql-docker-template
+   git clone https://github.com/documentation-platform/documentation-platform-backend.git
+   cd documentation-platform-backend  
    ```
 
 2. Set up environment variables:
@@ -61,32 +63,13 @@ This repository originated from our group's [Spring Boot Template Repo](https://
 
 
 ## Project Structure
+The main project structure is as follows:
 
-```
-├── .github/
-│   └── workflows/
-│
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   └── resources/
-│   └── test/
-│
-├── migrations/
-│
-├── .mvn/
-│
-├── compose.prod.yaml
-├── compose.yaml
-├── Dockerfile
-├── Dockerfile.pipeline
-├── .env
-├── .env.example
-├── mvnw
-├── mvnw.cmd
-├── pom.xml
-└── README.md
-```
+- `.github/` - GitHub Actions workflows
+- `docs/` - Documentation files
+- `src/` - Source code
+- `migrations/` - Flyway database migrations
+- `pom.xml` - Maven dependencies
 
 ## Development
 
@@ -106,13 +89,4 @@ Run tests using Maven:
 ./mvnw test
 ```
 
-Tests will automatically run on new commits for all branches.
-
-## Deployment
-
-The project includes GitHub Actions workflows for:
-
-1. Running tests on all branches
-2. Deployment to server for the main branch
-
-See the `.github/workflows/` directory for details.
+Tests will automatically run on pull requests.

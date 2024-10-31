@@ -31,9 +31,13 @@ services:
   spring-app:
     image: openjdk:21-jdk-slim
     container_name: spring-boot
+
+    # ----- This is just a way to reflect code changes immediately without rebuilding the image
     volumes:
       - ./:/volume_code
     working_dir: /volume_code
+    # -----
+
     command: bash -c "chmod +x mvnw && ./mvnw spring-boot:run"
     ports:
       - "${SPRING_APP_PORT}:8080"
@@ -41,14 +45,16 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
-      SPRING_PROFILES_ACTIVE: DEV
-      SPRING_FLYWAY_LOCATIONS: filesystem:migrations
+      #...
+      # Rest of the environment variables (Check file for the updated list)
+
     depends_on:
       mysql:
         condition: service_healthy
 
 volumes:
   mysql-data:
+
 ```
 
 ### Key Features:
@@ -77,6 +83,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
       SPRING_PROFILES_ACTIVE: PROD
       SPRING_FLYWAY_LOCATIONS: classpath:db/migrations
+      #...
+      # Rest of the environment variables (Check file for the updated list)
 ```
 
 ### Key Features:
