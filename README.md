@@ -10,7 +10,7 @@ This repository originated from our group's [Spring Boot Template Repo](https://
 
 - [Testing Guide](docs/testing.md)
 - [Migration Guide](docs/migration.md)
-- [Single Instance Deployment Guide (Previous Strategy)](docs/single-instance-deploy)
+- [Single Instance Deployment Guide (Previous Strategy)](docs/single-instance-deploy.md)
 - [Multiple Instance Deployment Guide (Current Strategy)](docs/multiple-instance-deploy.md)
 - [Infrastructure Setup Guide](docs/infrastructure-setup.md)
 - [Docker Guide](docs/docker.md)
@@ -30,7 +30,6 @@ This repository originated from our group's [Spring Boot Template Repo](https://
 - [Project Structure](#project-structure)
 - [Development](#development)
 - [Testing](#testing)
-- [Deployment](#deployment)
 
 ## Prerequisites
 

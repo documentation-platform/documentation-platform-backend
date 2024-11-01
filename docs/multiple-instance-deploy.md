@@ -118,7 +118,7 @@ jobs:
 
 ## General Setup Instructions
 
-1. **Launch an at least two instances**: 
+1. **Launch at least two instances**: 
     - Go to Oracle Cloud Console and create two instances.
     - Note down the OCID of each instance.
 2. **Create a Load Balancer**:
