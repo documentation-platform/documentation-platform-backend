@@ -1,10 +1,5 @@
-# Documentation Platform
-
-This repository originated from our group's [Spring Boot Template Repo](https://github.com/brezden/spring-boot-mysql-docker-template), which we created to provide a solid foundation for starting this project.
-
-## Operating System Compatibility
-
-**Important:** This template is primarily designed and tested for Ubuntu. If you're using Windows, you can use Windows Subsystem for Linux (WSL) for a smoother experience. If you choose to use Windows natively, minor tweaks might be needed throughout the setup and deployment process.
+# MarkDock API Repo
+This repository stores all the code for the MarkDock API.
 
 ## Documentation 
 
@@ -40,8 +35,7 @@ This repository originated from our group's [Spring Boot Template Repo](https://
 
 1. Clone this repository:
    ```
-   git clone https://github.com/documentation-platform/documentation-platform-backend.git
-   cd documentation-platform-backend  
+   git clone git@github.com:mark-dock/mark-dock-api.git
    ```
 
 2. Set up environment variables:
