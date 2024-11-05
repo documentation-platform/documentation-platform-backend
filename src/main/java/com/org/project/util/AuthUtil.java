@@ -69,6 +69,10 @@ public class AuthUtil {
         cookie.setSecure(true);
         cookie.setAttribute("SameSite", jwtCookieSameSite == null ? "Lax" : jwtCookieSameSite);
 
+        // This is just so the cookie doesn't expire when the browser is closed
+        // The JWT token will still expire based on the expiration time in the token
+        cookie.setMaxAge(31 * 24 * 60 * 60);
+
         if (Objects.equals(cookieName, AuthController.REFRESH_TOKEN_COOKIE_NAME)) {
             cookie.setPath("/auth/refresh");
         } else {
