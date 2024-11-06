@@ -8,3 +8,4 @@ import org.springframework.stereotype.Repository;
 public interface OrganizationRepository extends JpaRepository<Organization, Integer> {
     // Method definitions, if any, remain the same
 }
+
