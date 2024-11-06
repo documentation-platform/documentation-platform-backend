@@ -3,27 +3,22 @@ package com.org.project.model;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
-import jakarta.persistence.PrePersist;
-
-import com.org.project.util.PasswordUtil;
-import com.org.project.util.AuthUtil;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Table(name = "organization")
-//for now return all organizations in the system
-//org table has id and name
 public class Organization {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private UUID id;
+    private Integer id;
 
     @Column(name = "name")
     private String name;
@@ -36,16 +31,18 @@ public class Organization {
     @UpdateTimestamp
     private Date updatedAt;
 
-    @PrePersist
-    public void prePersist() {
-        this.id = UUID.randomUUID();
+    public Organization() {}
+
+    public Organization(String name) {
+        this.name = name;
     }
 
-    public UUID getId() {
+    // Getters and setters
+    public Integer getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -73,3 +70,4 @@ public class Organization {
         this.updatedAt = updatedAt;
     }
 }
+
