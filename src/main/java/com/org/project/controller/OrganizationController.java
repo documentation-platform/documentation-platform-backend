@@ -59,8 +59,8 @@ public class OrganizationController {
     @Autowired
     private InviteRepository InviteRepository;
 
-    @Value("${BASE_API_URL}")
-    private String baseApiUrl;
+    @Value("${WEB_APPLICATION_URL}")
+    private String baseUrl;
 
     // Create an invite link
     @PostMapping("/create-invite-link")
@@ -96,7 +96,7 @@ public class OrganizationController {
         InviteRepository.save(invite);
 
         // Construct the invite link using the baseApiUrl loaded from .env
-        String inviteLink = baseApiUrl + "/organization/invite?token=" + inviteToken;
+        String inviteLink = baseUrl + "invite?token=" + inviteToken;
 
         // Prepare the response
         Map<String, Object> response = new HashMap<>();
