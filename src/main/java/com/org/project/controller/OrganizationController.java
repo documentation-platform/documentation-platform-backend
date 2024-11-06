@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,13 +59,14 @@ public class OrganizationController {
     @Autowired
     private InviteRepository InviteRepository;
 
+    @Value("${BASE_API_URL}")
+    private String baseApiUrl;
+
     // Create an invite link
     @PostMapping("/create-invite-link")
-    public ResponseEntity<Map<String, Object>> createInviteLink(@RequestBody Map<String, Object> request) {
-        // Extracting the organization and access IDs, as well as the base API URL from the request
-        Integer organizationId = (Integer) request.get("organizationId");
-        Integer accessId = (Integer) request.get("accessId");
-        String baseApiUrl = (String) request.get("baseApiUrl");  // The URL passed from the frontend
+    public ResponseEntity<Map<String, Object>> createInviteLink(@RequestBody Map<String, Integer> request) {
+        Integer organizationId = request.get("organizationId");
+        Integer accessId = request.get("accessId");
 
         // Validate if the organization exists
         Organization organization = organizationRepository.findById(organizationId).orElse(null);
@@ -92,7 +95,7 @@ public class OrganizationController {
         // Save the invite
         InviteRepository.save(invite);
 
-        // Construct the invite link using the baseApiUrl passed from the frontend
+        // Construct the invite link using the baseApiUrl loaded from .env
         String inviteLink = baseApiUrl + "/organization/invite?token=" + inviteToken;
 
         // Prepare the response
