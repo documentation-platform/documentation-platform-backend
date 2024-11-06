@@ -7,11 +7,16 @@ This document outlines the steps to set up the infrastructure on Oracle Cloud an
 - Virtual Cloud Network (VCN)
 - At least 1 instance (Deployment workflow uses 2 instances)
 - MySQL Database
+- SSL Certificate for API Domain (Optional)
 - Load Balancer
 - Oracle CLI Configuration
 
+---
+
 ## Oracle Cloud Account
 Sign up for an Oracle Cloud account and create a new project.
+
+---
 
 ## Virtual Cloud Network (VCN)
 This is a virtual cloud network that all of your resources will be connected to. You can create a VCN by following these steps:
@@ -26,6 +31,8 @@ Note: You will need to create a public and private subnet. The public subnet wil
 
 After the creation of the VCN, you will need to create a security list for the VCN. You can allow all traffic in the security list for now but you can restrict it later.
 
+---
+
 ## Create an Instance
 You can create an instance by following these steps:
 1. Go to the Oracle Cloud Console.
@@ -34,6 +41,8 @@ You can create an instance by following these steps:
 4. Click on "Create Instance".
 5. You can choose whatever shape you want for the instance. Image will want to be Ubuntu.
 6. Click on "Create" and wait for the instance to be created.
+
+---
 
 ## Setting up the Instance
 Now that you have created your instance you will want to connect to it and set it up. You can connect to the instance by following these steps:
@@ -55,6 +64,8 @@ This will ask you for the repository link which you can choose the non-SSH one, 
 7. Now you can restart your instance or manually start the docker container to get the server to run. Upon starting the server,
 the server will be accessible at the public IP address of the instance.
 
+---
+
 ## MySQL Database
 You can create a MySQL database anywhere but for this project, we will be using an instance in Oracle Cloud. You can create a MySQL database by following these steps:
 1. Go to the Oracle Cloud Console.
@@ -66,6 +77,17 @@ You can create a MySQL database anywhere but for this project, we will be using 
 
 Make sure to create the MySQL database in the private subnet of the VCN. You can use the Bastion service inside the Oracle Cloud Console to connect to the MySQL database.
 Since the instances are in the same VCN, they can connect to the MySQL database.
+
+---
+
+## Optional: SSL Certificate for API Domain
+If you want to have your load balancer use HTTPS, you will need to have an SSL certificate for your domain. You can get an SSL certificate from a certificate authority or use Let's Encrypt to get a free SSL certificate. For domains
+on Porkbun, you can get a free auto-renewing SSL certificate for your domain.
+
+You will need the following files for the SSL certificate:
+1. SSL Certificate
+2. CA Certificate
+3. Private Key
 
 ## Load Balancer
 If you are creating multiple instances, you will need to create a load balancer to distribute the traffic between the instances. You can create a load balancer by following these steps:
@@ -81,6 +103,41 @@ If you are creating multiple instances, you will need to create a load balancer 
 
 Now all the instances will be connected to the load balancer and the load balancer will distribute the traffic between the instances. When
 pinging the servers use the load balancer IP address.
+
+#### Optional: SSL Certificate for Load Balancer
+If you followed the last step of the SSL Certificate for the API Domain, you can upload the SSL certificate to the load balancer by following these steps:
+1. In the load balancer settings, on the left side, click on "Load balancer certificates".
+2. Click on "Add Certificate".
+3. Fill in the necessary details and upload the SSL certificate, CA certificate, and private key.
+If you are using Porkbun, you can download the SSL bundle from your domain settings. This will include three files:
+
+- `domain.cert`
+- `private.key`
+- `public.key`
+
+The `domain.cert` file contains two certificates: the SSL certificate and the CA certificate respectively. You will need to split these into two seperate files or paste them into the load balancer settings.
+
+- SSL Certificate = 1st key in `domain.cert`
+- CA Certificate = 2nd key in `domain.cert`
+- Private Key = `private.key`
+
+4. Click on "Add Certificate".
+5. Go to the "Listeners" tab and click on the pencil icon to edit the listener.
+6. Under the "SSL Configuration" section, select the SSL certificate you uploaded.
+7. Make sure the port is set to 443 and use SSL is enabled.
+8. Click on "Update".
+
+Now the load balancer will use the SSL certificate to serve the API. You can set your domain on Porkbun to point to the load balancer IP address by using an A record.
+
+```
+Name: api.markdock.com
+Type: A
+Value: [Load Balancer IP Address]
+```
+
+Remember that the SSL certifcates will expire after typically 90 days if you have not set up an auto-renewal process.
+
+---
 
 ## Oracle CLI Configuration
 You will want to configure Oracle CLI so that we can talk to our resources from the Github workflows. You can configure Oracle CLI by following these steps:
