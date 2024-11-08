@@ -104,6 +104,8 @@ public class Invite {
     public void setExpiresAt(Date expiresAt) {
         this.expiresAt = expiresAt;
     }
+
+
 }
 
 
