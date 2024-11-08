@@ -2,10 +2,10 @@ package com.org.project.controller;
 
 import com.org.project.model.Access;
 import com.org.project.model.Invite;
+import com.org.project.model.User;
 import com.org.project.model.Organization;
-import com.org.project.repository.OrganizationRepository;
-import com.org.project.repository.AccessRepository;
-import com.org.project.repository.InviteRepository;
+import com.org.project.model.OrganizationUserRelation;
+import com.org.project.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -108,6 +109,57 @@ public class OrganizationController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @Autowired
+    private OrganizationUserRelationRepository OrganizationUserRelationRepository;
 
+    // API to accept the invite
+    // Accept invite endpoint
+    @PostMapping("/accept-invite")
+    public ResponseEntity<Map<String, Object>> acceptInvite(@RequestBody Map<String, String> request) {
+        String inviteToken = request.get("token");
+        String userId = request.get("userId");
 
+        Invite invite = InviteRepository.findById(inviteToken).orElse(null);
+        if (invite == null) {
+            return new ResponseEntity<>(Map.of(
+                    "error", "Invalid invite token",
+                    "providedToken", inviteToken
+            ), HttpStatus.NOT_FOUND);
+        }
+
+        // Check if the invite's usage limit is reached
+        if (invite.getCurrentCount() >= invite.getMaxCount()) {
+            return new ResponseEntity<>(Map.of("error", "Invite usage limit reached"), HttpStatus.FORBIDDEN);
+        }
+
+        // Check if user already exists in organization_user_relation
+        OrganizationUserRelation existingRelation = OrganizationUserRelationRepository.findByUserIdAndOrganizationId(userId, invite.getOrganization().getId());
+        if (existingRelation != null) {
+            return new ResponseEntity<>(Map.of("error", "User is already part of the organization"), HttpStatus.CONFLICT);
+        }
+
+        // Create the relation between the user and organization with the access level
+        OrganizationUserRelation relation = new OrganizationUserRelation();
+        relation.setUserId(userId);
+        relation.setOrganizationId(invite.getOrganization().getId());
+        relation.setAccessId(invite.getAccess().getId());
+        OrganizationUserRelationRepository.save(relation);
+
+        // Update the current count of invite usage
+        invite.setCurrentCount(invite.getCurrentCount() + 1);
+        InviteRepository.save(invite);
+
+        // Prepare response
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Invite accepted");
+        response.put("organizationId", invite.getOrganization().getId());
+        response.put("userId", userId);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }
+
+
+
+
+
