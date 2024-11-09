@@ -29,6 +29,9 @@ jobs:
         run: |
           MAIN_TIMESTAMP="${{ steps.main-migration.outputs.main_timestamp }}"
           
+          # Get current date in YYYYMMDD format
+          CURRENT_DATE=$(date +"%Y%m%d")
+          
           # Get list of changed migration files in PR
           PR_MIGRATIONS=$(git diff --name-only origin/main... migrations/ | grep '\.sql$' || true)
           
@@ -41,12 +44,24 @@ jobs:
               exit 1
             fi
           
+            # Extract the date part (YYYYMMDD) from migration timestamp
+            MIGRATION_DATE=${MIGRATION_TIMESTAMP:0:8}
+          
+            # Check if migration date is older than main branch
             if [ "$MIGRATION_TIMESTAMP" -le "$MAIN_TIMESTAMP" ]; then
-              echo "Error: Migration $migration is more order than or equal to the latest migration in main branch"
+              echo "Error: Migration $migration is older than or equal to the latest migration in main branch"
               echo "PR Migration timestamp: $MIGRATION_TIMESTAMP"
               echo "Latest main branch migration timestamp: $MAIN_TIMESTAMP"
               exit 1
             fi
+          
+            # Check if migration date is in the future
+            if [ "$MIGRATION_DATE" -gt "$CURRENT_DATE" ]; then
+              echo "Error: Migration $migration has a future date"
+              echo "Migration date: ${MIGRATION_DATE}"
+              echo "Current date: ${CURRENT_DATE}"
+              exit 1
+            fi
           done
           
-          echo "All migrations are newer than the latest migration in main branch"
+          echo "All migrations are newer than the latest migration in main branch and not future-dated"
