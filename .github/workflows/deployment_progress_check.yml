@@ -1,13 +1,12 @@
-name: Check Main Branch Status
+name: Deployment In-Progress Check
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
     branches:
       - main
 
 jobs:
-  check-main-status:
+  main-branch-deployment-status-check:
     runs-on: ubuntu-latest
     steps:
       - name: Check for running workflows on main
@@ -22,6 +21,7 @@ jobs:
           if [ ! -z "$running_workflows" ]; then
             echo "Error: There are currently running workflows on main branch:"
             echo "$running_workflows"
+            echo "Please wait for them to complete before merging, and then re-run the workflow."
             exit 1
           fi
           

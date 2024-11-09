@@ -9,6 +9,7 @@ This repository stores all the code for the MarkDock API.
 - [Multiple Instance Deployment Guide (Current Strategy)](docs/multiple-instance-deploy.md)
 - [Infrastructure Setup Guide](docs/infrastructure-setup.md)
 - [Docker Guide](docs/docker.md)
+- [GitHub Workflows ](docs/github-workflows.md)
 
 ## Features
 
