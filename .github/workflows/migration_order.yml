@@ -1,33 +1,46 @@
-name: Migration Order Validation
+name: Migration Validation
 
 on:
   pull_request:
     branches:
       - main
-    paths:
-      - 'migrations/*.sql'
 
 jobs:
-  validate_migration_order:
+  validate_migrations:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Get latest migration from main branch
+      - name: Check for SQL migrations
+        id: check-migrations
+        run: |
+          PR_MIGRATIONS=$(git diff --name-only origin/main... migrations/ | grep '\.sql$' || true)
+          if [ -z "$PR_MIGRATIONS" ]; then
+            echo "No SQL migrations found in this PR - skipping validation"
+            echo "has_migrations=false" >> $GITHUB_OUTPUT
+          else
+            echo "SQL migrations found - will validate"
+            echo "has_migrations=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get latest migration from main
+        if: steps.check-migrations.outputs.has_migrations == 'true'
         id: main-migration
         run: |
-          git fetch origin main
-          # Properly piped commands to sort and get the latest migration
-          LATEST_MAIN=$(git ls-tree -r origin/main migrations/ | grep '\.sql$' | awk '{print $4}' | sort -V | tail -n 1)
-          MAIN_TIMESTAMP=$(echo "$LATEST_MAIN" | grep -oE 'V[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{6}' | sed 's/V//' | tr -d '_')
+          git checkout origin/main
+          MAIN_TIMESTAMP=$(ls -1 migrations/*.sql 2>/dev/null | tail -n 1 | grep -oE 'V[0-9]{4}_[0-9]{2}_[0-9]{2}_[0-9]{6}' | sed 's/V//' | tr -d '_' || echo "0")
           echo "main_timestamp=$MAIN_TIMESTAMP" >> $GITHUB_OUTPUT
-          echo "Latest main migration: $LATEST_MAIN"
+          git checkout -
 
-      - name: Check PR migrations
+      - name: Validate migration order
+        if: steps.check-migrations.outputs.has_migrations == 'true'
         run: |
           MAIN_TIMESTAMP="${{ steps.main-migration.outputs.main_timestamp }}"
+          
+          # Get current date in YYYYMMDD format
+          CURRENT_DATE=$(date +"%Y%m%d")
           
           # Get list of changed migration files in PR
           PR_MIGRATIONS=$(git diff --name-only origin/main... migrations/ | grep '\.sql$' || true)
@@ -41,12 +54,24 @@ jobs:
               exit 1
             fi
           
+            # Extract the date part (YYYYMMDD) from migration timestamp
+            MIGRATION_DATE=${MIGRATION_TIMESTAMP:0:8}
+          
+            # Check if migration date is older than main branch
             if [ "$MIGRATION_TIMESTAMP" -le "$MAIN_TIMESTAMP" ]; then
-              echo "Error: Migration $migration is more order than or equal to the latest migration in main branch"
+              echo "Error: Migration $migration is older than or equal to the latest migration in main branch"
               echo "PR Migration timestamp: $MIGRATION_TIMESTAMP"
               echo "Latest main branch migration timestamp: $MAIN_TIMESTAMP"
               exit 1
             fi
+          
+            # Check if migration date is in the future
+            if [ "$MIGRATION_DATE" -gt "$CURRENT_DATE" ]; then
+              echo "Error: Migration $migration has a future date"
+              echo "Migration date: ${MIGRATION_DATE}"
+              echo "Current date: ${CURRENT_DATE}"
+              exit 1
+            fi
           done
           
-          echo "All migrations are newer than the latest migration in main branch"
+          echo "All migrations are newer than the latest migration in main branch and not future-dated"
