@@ -6,19 +6,16 @@ on:
       - main
 
 jobs:
-  build-and-test:
+  build-checker:
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Set up Docker
-        uses: actions/setup-docker@v2
-
       - name: Build and start services
         run: |
-          docker-compose up -d --build
+          docker compose up -d --build
         env:
           MYSQL_DATABASE: project_db
           MYSQL_USER: username
@@ -33,10 +30,8 @@ jobs:
 
       - name: Wait for API to be ready
         run: |
-          until curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/api/health | grep -q "201"; do
-            echo "Waiting for API to be ready..."
-            sleep 60
-          done
+          echo "Waiting for API to be ready..."
+          sleep 45
 
       - name: Run Health Check
         run: |
