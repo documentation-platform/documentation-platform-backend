@@ -1,0 +1,43 @@
+name: Build and Health Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-checker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Build and start services
+        run: |
+          docker compose up -d --build
+        env:
+          MYSQL_DATABASE: project_db
+          MYSQL_USER: username
+          MYSQL_PASSWORD: password
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_PORT: 3306
+          SPRING_APP_PORT: 8080
+          JWT_ACCESS_SECRET: divyematsBHqHUxi6QD5D811iWH7qNxUW9U/QboseFw=
+          JWT_ACCESS_EXPIRATION_SECONDS: 3600
+          JWT_REFRESH_SECRET: divyematsBHqHUxi6QD5D811iWH7qNxUW9U/QboseFw=
+          JWT_REFRESH_EXPIRATION_SECONDS: 86400
+
+      - name: Wait for API to be ready
+        run: |
+          echo "Waiting for API to be ready..."
+          sleep 45
+
+      - name: Run Health Check
+        run: |
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/api/health)
+          if [ "$RESPONSE" != "200" ]; then
+            echo "Health check failed with status code $RESPONSE"
+            exit 1
+          fi
+          echo "Health check passed with status code $RESPONSE"
