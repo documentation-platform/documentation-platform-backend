@@ -29,6 +29,11 @@ V{version_date}__{description}.sql
 
 Example: `V2024_09_26_082319__create_users_table.sql`
 
+## Migration Order
+Migrations are applied in the order of their version numbers. The version number is based on the timestamp in the filename. This ensures that migrations are applied in the correct sequence.
+
+If you try and apply a pull request that contains a migration with a version number lower than the current version in the database, the workflow will fail. This is to prevent applying migrations out of order.
+
 ## Migration Content
 
 Each migration file contains SQL statements to modify the database schema. For example:
