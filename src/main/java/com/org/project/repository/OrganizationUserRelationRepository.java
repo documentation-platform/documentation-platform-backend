@@ -14,4 +14,5 @@ import java.util.List;
 public interface OrganizationUserRelationRepository extends JpaRepository<OrganizationUserRelation, Long> {
     OrganizationUserRelation findByUserIdAndOrganizationId(String userId, Integer organizationId);
     List<OrganizationUserRelation> findByUserId(String userId);
+    List<OrganizationUserRelation> findByOrganizationId(Integer organizationId);
 }
