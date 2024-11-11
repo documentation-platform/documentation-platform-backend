@@ -16,10 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -78,10 +75,34 @@ public class OrganizationController {
 
         // Prepare the response
         Map<String, Object> response = new HashMap<>();
-        response.put("organizations", organizations);
+        List<Map<String, Object>> organizationDetails = new ArrayList<>();
 
+        for (Organization organization : organizations) {
+            // Fetch the access name for the user in this organization
+            OrganizationUserRelation userRelation = userRelations.stream()
+                    .filter(relation -> relation.getOrganizationId().equals(organization.getId()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("User not found in organization"));
+
+            // Fetch the access name for this relation
+            Access access = AccessRepository.findById(userRelation.getAccessId())
+                    .orElseThrow(() -> new RuntimeException("Access level not found"));
+
+            // Create a map for this organization's details
+            Map<String, Object> orgDetails = new HashMap<>();
+            orgDetails.put("id", organization.getId());
+            orgDetails.put("name", organization.getName());
+            orgDetails.put("access", access.getName()); // Include access name
+            orgDetails.put("createdAt", organization.getCreatedAt());
+            orgDetails.put("updatedAt", organization.getUpdatedAt());
+            // Add this organization to the response list
+            organizationDetails.add(orgDetails);
+        }
+
+        response.put("organizations", organizationDetails);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
 
     // Create a new organization
     @Secured
