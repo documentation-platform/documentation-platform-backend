@@ -17,8 +17,10 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -28,32 +30,8 @@ public class OrganizationController {
     @Autowired
     private OrganizationRepository organizationRepository;
 
-    //get a simple list of all organizations
-    @GetMapping("/get")
-    public ResponseEntity<Map<String, Object>> getOrganizations(HttpServletRequest request) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("organizations", organizationRepository.findAll());
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    // Create a new organization
-    @PostMapping("/create")
-    public ResponseEntity<Map<String, Object>> createOrganization(@RequestBody Map<String, String> request) {
-        String name = request.get("name");
-        if (name == null || name.isEmpty()) {
-            return new ResponseEntity<>(Map.of("error", "Name is required"), HttpStatus.BAD_REQUEST);
-        }
-
-        Organization newOrganization = new Organization(name);
-        organizationRepository.save(newOrganization);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("organization", newOrganization);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
-
-    // Create an invite link
+    @Autowired
+    private OrganizationUserRelationRepository OrganizationUserRelationRepository;
 
     @Autowired
     private AccessRepository AccessRepository;
@@ -63,6 +41,77 @@ public class OrganizationController {
 
     @Value("${WEB_APPLICATION_URL}")
     private String baseUrl;
+
+    //get a simple list of all organizations
+    @GetMapping("/get-all")
+    public ResponseEntity<Map<String, Object>> getOrganizations(HttpServletRequest request) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("organizations", organizationRepository.findAll());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Secured
+    @GetMapping("/get")
+    public ResponseEntity<Map<String, Object>> getOrganizationsByUserId(HttpServletRequest request) {
+        String userId = (String) request.getAttribute("user_id");
+
+        // Check if userId exists
+        if (userId == null || userId.isEmpty()) {
+            return new ResponseEntity<>(Map.of("error", "User ID is required"), HttpStatus.BAD_REQUEST);
+        }
+
+        // Fetch all OrganizationUserRelation records for the given userId
+        List<OrganizationUserRelation> userRelations = OrganizationUserRelationRepository.findByUserId(userId);
+
+        // If no relations are found, return a message indicating no organizations
+        if (userRelations.isEmpty()) {
+            return new ResponseEntity<>(Map.of("message", "No organizations found for this user"), HttpStatus.NOT_FOUND);
+        }
+
+        // Extract the organizationIds from the relations
+        List<Integer> organizationIds = userRelations.stream()
+                .map(OrganizationUserRelation::getOrganizationId)
+                .collect(Collectors.toList());
+
+        // Fetch the organizations based on the organizationIds
+        List<Organization> organizations = organizationRepository.findAllById(organizationIds);
+
+        // Prepare the response
+        Map<String, Object> response = new HashMap<>();
+        response.put("organizations", organizations);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // Create a new organization
+    @Secured
+    @PostMapping("/create")
+    public ResponseEntity<Map<String, Object>> createOrganization(HttpServletRequest securedRequest, @RequestBody Map<String, String> request) {
+        String name = request.get("name");
+        String userId = (String) securedRequest.getAttribute("user_id");
+
+        if (name == null || name.isEmpty()) {
+            return new ResponseEntity<>(Map.of("error", "Name is required"), HttpStatus.BAD_REQUEST);
+        }
+
+        //create the org and grab the id of new org
+        Organization newOrganization = new Organization(name);
+        organizationRepository.save(newOrganization);
+        Integer organizationId = newOrganization.getId();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("organization", newOrganization);
+
+        //Add the user to the org they just made as an admin
+        OrganizationUserRelation relation = new OrganizationUserRelation();
+        relation.setUserId(userId);
+        relation.setOrganizationId(organizationId);
+        relation.setAccessId(1);
+        OrganizationUserRelationRepository.save(relation);
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
 
     // Create an invite link
     @PostMapping("/create-invite-link")
@@ -110,8 +159,6 @@ public class OrganizationController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @Autowired
-    private OrganizationUserRelationRepository OrganizationUserRelationRepository;
 
     // API to accept the invite
     // Accept invite endpoint
