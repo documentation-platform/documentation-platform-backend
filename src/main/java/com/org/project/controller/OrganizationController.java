@@ -46,7 +46,6 @@ public class OrganizationController {
         response.put("organizations", organizationRepository.findAll());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
     @Secured
     @GetMapping("/get")
     public ResponseEntity<Map<String, Object>> getOrganizationsByUserId(HttpServletRequest request) {
@@ -78,7 +77,7 @@ public class OrganizationController {
         List<Map<String, Object>> organizationDetails = new ArrayList<>();
 
         for (Organization organization : organizations) {
-            // Fetch the access name for the user in this organization
+            // Fetch the access level for the user in this organization
             OrganizationUserRelation userRelation = userRelations.stream()
                     .filter(relation -> relation.getOrganizationId().equals(organization.getId()))
                     .findFirst()
@@ -95,13 +94,39 @@ public class OrganizationController {
             orgDetails.put("access", access.getName()); // Include access name
             orgDetails.put("createdAt", organization.getCreatedAt());
             orgDetails.put("updatedAt", organization.getUpdatedAt());
-            // Add this organization to the response list
+
+            // If the user is an admin (accessId == 1), add the members list
+            if (access.getId() == 1) {
+                // Fetch all members of the organization
+                List<OrganizationUserRelation> orgRelations = OrganizationUserRelationRepository.findByOrganizationId(organization.getId());
+
+                // Build the members list
+                List<Map<String, Object>> members = new ArrayList<>();
+                for (OrganizationUserRelation orgRelation : orgRelations) {
+                    String memberId = orgRelation.getUserId();
+                    Access memberAccess = AccessRepository.findById(orgRelation.getAccessId())
+                            .orElseThrow(() -> new RuntimeException("Access level not found for member"));
+
+                    Map<String, Object> memberDetails = new HashMap<>();
+                    memberDetails.put("userId", memberId);
+                    memberDetails.put("access", memberAccess.getName());
+
+                    members.add(memberDetails);
+                }
+
+                orgDetails.put("members", members);  // Add the members list
+            }
+
+            // Add the organization details to the response
             organizationDetails.add(orgDetails);
         }
 
         response.put("organizations", organizationDetails);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+
+
 
 
     // Create a new organization
