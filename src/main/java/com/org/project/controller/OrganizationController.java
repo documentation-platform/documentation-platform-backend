@@ -17,8 +17,10 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -41,10 +43,43 @@ public class OrganizationController {
     private String baseUrl;
 
     //get a simple list of all organizations
-    @GetMapping("/get")
+    @GetMapping("/get-all")
     public ResponseEntity<Map<String, Object>> getOrganizations(HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
         response.put("organizations", organizationRepository.findAll());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @Secured
+    @GetMapping("/get")
+    public ResponseEntity<Map<String, Object>> getOrganizationsByUserId(HttpServletRequest request) {
+        String userId = (String) request.getAttribute("user_id");
+
+        // Check if userId exists
+        if (userId == null || userId.isEmpty()) {
+            return new ResponseEntity<>(Map.of("error", "User ID is required"), HttpStatus.BAD_REQUEST);
+        }
+
+        // Fetch all OrganizationUserRelation records for the given userId
+        List<OrganizationUserRelation> userRelations = OrganizationUserRelationRepository.findByUserId(userId);
+
+        // If no relations are found, return a message indicating no organizations
+        if (userRelations.isEmpty()) {
+            return new ResponseEntity<>(Map.of("message", "No organizations found for this user"), HttpStatus.NOT_FOUND);
+        }
+
+        // Extract the organizationIds from the relations
+        List<Integer> organizationIds = userRelations.stream()
+                .map(OrganizationUserRelation::getOrganizationId)
+                .collect(Collectors.toList());
+
+        // Fetch the organizations based on the organizationIds
+        List<Organization> organizations = organizationRepository.findAllById(organizationIds);
+
+        // Prepare the response
+        Map<String, Object> response = new HashMap<>();
+        response.put("organizations", organizations);
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
