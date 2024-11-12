@@ -54,6 +54,11 @@ public class AuthController {
         }
     }
 
+    @GetMapping("/health")
+    public ResponseEntity<String> healthResponse() {
+        return new ResponseEntity<String>("API Is Healthy!", HttpStatus.OK);
+    }
+
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(HttpServletResponse response, @Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
         try {

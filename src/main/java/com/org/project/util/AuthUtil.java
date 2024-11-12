@@ -179,7 +179,7 @@ public class AuthUtil {
      * Get UserId from access token
      * @return UserId
      */
-    public String getUserIdFromAcessToken(String token) {
+    public String getUserIdFromAccessToken(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(jwtAccessSecret)
                 .parseClaimsJws(token)
