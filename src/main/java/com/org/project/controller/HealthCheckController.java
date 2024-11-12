@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.*;
 public class HealthCheckController {
     @GetMapping
     public ResponseEntity<String> healthResponse() {
-        return new ResponseEntity<String>("API Is Healthy!", HttpStatus.OK);
+        return new ResponseEntity<String>("API Is Healthyyy!", HttpStatus.OK);
     }
 }

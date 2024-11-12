@@ -24,7 +24,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // Check if the request URI matches any public route
         if (isPublicRoute(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;
