@@ -1,8 +1,11 @@
 package com.org.project.service;
 
 import com.org.project.exception.AccountExistsException;
+import com.org.project.model.OrganizationUserRelation;
 import com.org.project.model.User;
 import com.org.project.dto.RegisterRequestDTO;
+import com.org.project.repository.OrganizationRepository;
+import com.org.project.repository.OrganizationUserRelationRepository;
 import com.org.project.repository.UserRepository;
 
 import com.org.project.util.AuthUtil;
@@ -17,6 +20,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private OrganizationUserRelationRepository organizationUserRelationRepository;
 
     @Transactional
     public User registerUser(RegisterRequestDTO userRequest) {
@@ -50,5 +56,15 @@ public class UserService {
         User user = userRepository.findById(userId);
         user.setAuthVersion(AuthUtil.generateRandomAuthVersion());
         userRepository.save(user);
+    }
+
+    public Boolean isUserOrganizationAdmin(String userId, int organizationId){
+        Integer userAccessLevel = getAccessId(userId, organizationId);
+        return (userAccessLevel == 1);
+    }
+
+    public Integer getAccessId(String userId, Integer organizationId) {
+        OrganizationUserRelation relation = organizationUserRelationRepository.findByUserIdAndOrganizationId(userId, organizationId);
+        return (relation != null) ? relation.getAccessId() : null;
     }
 }

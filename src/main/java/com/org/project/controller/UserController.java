@@ -1,7 +1,7 @@
 package com.org.project.controller;
 
 import com.org.project.model.User;
-import com.org.project.security.Secured;
+import com.org.project.security.OrganizationAdmin;
 import com.org.project.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Secured
     @GetMapping("/info")
     public ResponseEntity<Map<String, Object>> userInfo(HttpServletRequest request) {
         String user_id = (String) request.getAttribute("user_id");
