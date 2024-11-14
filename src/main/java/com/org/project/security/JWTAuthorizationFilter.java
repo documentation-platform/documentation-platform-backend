@@ -15,16 +15,20 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
     @Autowired
     private AuthUtil authUtil;
 
-    private static final List<String> PUBLIC_ROUTES = List.of("/api/health", "/auth/**");
+    private static final List<String> PUBLIC_ROUTES = List.of("/api/health");
+    private static final List<String> PUBLIC_AUTH_ROUTES = List.of("/auth");
+    private static final List<String> AUTHENTICATED_EXCEPTIONS = List.of("/auth/logout_all");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (isPublicRoute(request.getRequestURI())) {
+        String requestURI = request.getRequestURI();
+
+        if (isPublicRoute(requestURI)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -42,7 +46,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean isPublicRoute(String requestURI) {
-        return PUBLIC_ROUTES.stream().anyMatch(route -> requestURI.startsWith(route.replace("**", "")));
+        if (PUBLIC_ROUTES.contains(requestURI)) {
+            return true;
+        }
+
+        if (PUBLIC_AUTH_ROUTES.stream().anyMatch(requestURI::startsWith) && !AUTHENTICATED_EXCEPTIONS.contains(requestURI)) {
+            return true;
+        }
+
+        return false;
     }
 
     private String getTokenFromCookie(HttpServletRequest request, String cookieName) {

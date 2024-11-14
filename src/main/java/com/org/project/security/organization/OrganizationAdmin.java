@@ -1,4 +1,4 @@
-package com.org.project.security;
+package com.org.project.security.organization;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

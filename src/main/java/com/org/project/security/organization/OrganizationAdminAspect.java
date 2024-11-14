@@ -1,4 +1,4 @@
-package com.org.project.security;
+package com.org.project.security.organization;
 
 import com.org.project.service.UserService;
 import org.aspectj.lang.annotation.Aspect;

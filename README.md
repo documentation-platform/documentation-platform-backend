@@ -3,6 +3,7 @@ This repository stores all the code for the MarkDock API.
 
 ## Documentation 
 
+- [Development Guide](docs/development-guide.md)
 - [Testing Guide](docs/testing.md)
 - [Migration Guide](docs/migration.md)
 - [Single Instance Deployment Guide (Previous Strategy)](docs/single-instance-deploy.md)
