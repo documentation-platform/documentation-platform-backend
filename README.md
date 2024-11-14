@@ -40,8 +40,10 @@ This repository stores all the code for the MarkDock API.
    git clone git@github.com:mark-dock/mark-dock-api.git
    ```
 
-2. Set up environment variables:
-   Copy the `.env.example` file to `.env` and fill in the necessary values.
+2. Copy the `.env.example` file to `.env`. This file contains the environment variables for the application with default values. You can adjust these values if you want to change the application's configuration.
+   ```
+   cp .env.example .env
+   ```
 
 3. Start the development environment:
    ```
@@ -56,6 +58,14 @@ This repository stores all the code for the MarkDock API.
 - Go to **Settings > Build, Execution, Deployment > Compiler** and enable **Build project automatically**.
 - Then, go to **Advanced Settings** and check **Allow auto-make to start even if the developed application is currently running**.
 
+## Reset Development Environment
+If you want to reset the development environment, you can run the following command:
+
+```bash
+./dev_reset.sh
+```
+
+This script will remove the backend containers, remove the volumes, fix the `.env` file, and start the development environment again.
 
 ## Project Structure
 The main project structure is as follows:
