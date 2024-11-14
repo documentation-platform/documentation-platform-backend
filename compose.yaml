@@ -20,14 +20,16 @@ services:
   spring-app:
     image: openjdk:21-jdk-slim
     container_name: spring-boot
-
-    # ----- This is just a way to reflect code changes immediately without rebuilding the image
+    working_dir: /app
     volumes:
-      - ./:/volume_code
-    working_dir: /volume_code
-    # -----
-
-    command: bash -c "chmod +x mvnw && ./mvnw spring-boot:run"
+      - .:/app
+      - ~/.m2:/root/.m2
+    command: >
+      bash -c "
+        cd /app &&
+        chmod +x mvnw &&
+        ./mvnw spring-boot:run -Dspring-boot.devtools.restart.enabled=true
+      "
     ports:
       - "${SPRING_APP_PORT}:8080"
     environment:
@@ -43,7 +45,11 @@ services:
       JWT_COOKIE_SAME_SITE: None
       CORS_ALLOWED_ORIGINS: http://localhost:3000
       WEB_APPLICATION_URL: http://localhost:3000/
-
+    develop:
+      watch:
+        - path: ./src
+          target: /app/src
+          action: sync
     depends_on:
       mysql:
         condition: service_healthy
