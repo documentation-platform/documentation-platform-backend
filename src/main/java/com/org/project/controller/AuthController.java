@@ -6,7 +6,6 @@ import com.org.project.exception.AccountExistsException;
 import com.org.project.exception.UnauthorizedException;
 import com.org.project.model.auth.*;
 import com.org.project.model.User;
-import com.org.project.security.Secured;
 import com.org.project.service.UserService;
 import com.org.project.service.AuthService;
 import com.org.project.util.AuthUtil;
@@ -118,7 +117,6 @@ public class AuthController {
         return new ResponseEntity<>("Logged out", HttpStatus.ACCEPTED);
     }
 
-    @Secured
     @PostMapping("/logout_all")
     public ResponseEntity<String> logoutAll(HttpServletRequest request, HttpServletResponse response) {
         String userId = (String) request.getAttribute("user_id");

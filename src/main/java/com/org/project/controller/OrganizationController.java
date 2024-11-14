@@ -2,20 +2,17 @@ package com.org.project.controller;
 
 import com.org.project.model.Access;
 import com.org.project.model.Invite;
-import com.org.project.model.User;
 import com.org.project.model.Organization;
 import com.org.project.model.OrganizationUserRelation;
 import com.org.project.repository.*;
-import com.org.project.security.Secured;
+import com.org.project.security.organization.OrganizationAdmin;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,7 +43,7 @@ public class OrganizationController {
         response.put("organizations", organizationRepository.findAll());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-    @Secured
+
     @GetMapping("/get")
     public ResponseEntity<Map<String, Object>> getOrganizationsByUserId(HttpServletRequest request) {
         String userId = (String) request.getAttribute("user_id");
@@ -125,12 +122,7 @@ public class OrganizationController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-
-
-
-
     // Create a new organization
-    @Secured
     @PostMapping("/create")
     public ResponseEntity<Map<String, Object>> createOrganization(HttpServletRequest securedRequest, @RequestBody Map<String, String> request) {
         String name = request.get("name");
@@ -158,8 +150,8 @@ public class OrganizationController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-
     // Create an invite link
+    @OrganizationAdmin
     @PostMapping("/create-invite-link")
     public ResponseEntity<Map<String, Object>> createInviteLink(@RequestBody Map<String, Integer> request) {
         Integer organizationId = request.get("organizationId");
@@ -205,10 +197,8 @@ public class OrganizationController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-
     // API to accept the invite
     // Accept invite endpoint
-    @Secured
     @PostMapping("/accept-invite")
     public ResponseEntity<Map<String, Object>> acceptInvite(HttpServletRequest securedRequest, @RequestBody Map<String, String> request) {
         String userId = (String) securedRequest.getAttribute("user_id");

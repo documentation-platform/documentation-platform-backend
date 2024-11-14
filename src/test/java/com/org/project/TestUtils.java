@@ -19,6 +19,6 @@ public class TestUtils {
     public static void setupAuthMocks(AuthUtil authUtil) {
         when(authUtil.getTokenFromCookie(any(), any())).thenReturn("valid_test_token");
         when(authUtil.isAccessTokenValid(any())).thenReturn(true);
-        when(authUtil.getUserIdFromAcessToken(any())).thenReturn("test_user_id");
+        when(authUtil.getUserIdFromAccessToken(any())).thenReturn("test_user_id");
     }
 }
