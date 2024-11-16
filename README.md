@@ -82,9 +82,14 @@ This script will remove the backend containers, remove the volumes, fix the `.en
 The main project structure is as follows:
 
 - `.github/` - GitHub Actions workflows
+- `docker/` - Dockerfiles and Docker Compose files (Except the compose.yaml file which is in the root directory)
 - `docs/` - Documentation files
-- `src/` - Source code
 - `migrations/` - Flyway database migrations
+- `scripts/` - Shell scripts for development and deployment
+- `src/` - Source code
+- `.env.example` - Example environment variables 
+- `compose.yaml` - Docker Compose file for development
+- `mvnw` - Maven wrapper
 - `pom.xml` - Maven dependencies
 
 ## Testing
