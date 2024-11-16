@@ -7,5 +7,8 @@ if ! sudo systemctl is-active --quiet docker; then
   echo "Docker is not running. Starting Docker..."
   sudo systemctl start docker
 fi
-sudo docker compose -f docker/compose.prod.yaml down --remove-orphans
-sudo docker compose -f docker/compose.prod.yaml up --build -d
+
+export $(cat .env | xargs)
+
+sudo -E docker compose -f docker/compose.prod.yaml down --remove-orphans
+sudo -E docker compose -f docker/compose.prod.yaml up --build -d
