@@ -33,7 +33,7 @@ jobs:
           MYSQL_USER: username
           MYSQL_PASSWORD: password
         run: |
-          docker build -t spring-app-test -f Dockerfile.pipeline .
+          docker build -t spring-app-test -f docker/Dockerfile.pipeline .
           docker run --rm \
             --network host \
             -e SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/project_db \

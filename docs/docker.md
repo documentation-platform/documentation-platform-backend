@@ -31,36 +31,38 @@ services:
   spring-app:
     image: openjdk:21-jdk-slim
     container_name: spring-boot
-
-    # ----- This is just a way to reflect code changes immediately without rebuilding the image
+    working_dir: /app
     volumes:
-      - ./:/volume_code
-    working_dir: /volume_code
-    # -----
-
-    command: bash -c "chmod +x mvnw && ./mvnw spring-boot:run"
+      - .:/app
+      - ~/.m2:/root/.m2
+    command: >
+      bash -c "
+        cd /app &&
+        chmod +x mvnw &&
+        ./mvnw spring-boot:run -Dspring-boot.devtools.restart.enabled=true
+      "
     ports:
       - "${SPRING_APP_PORT}:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
-      #...
       # Rest of the environment variables (Check file for the updated list)
-
+  
+    develop:
+      watch:
+        - path: ./src
+          target: /app/src
+          action: sync
     depends_on:
       mysql:
         condition: service_healthy
-
-volumes:
-  mysql-data:
-
 ```
 
 ### Key Features:
 - MySQL 8.0 database with health check
 - Spring Boot application using OpenJDK 21
-- Volume mapping for immediate code reflection without rebuilding
+- 
 - Environment variables for database configuration
 - Flyway migrations support
 
