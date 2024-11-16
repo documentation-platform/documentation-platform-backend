@@ -61,7 +61,12 @@ sudo ./server_setup.sh
 
 This will ask you for the repository link which you can choose the non-SSH one, and it will clone the repository.
 6. Once the setup script is finished you can create an .env inside the `server_code` folder and fill in the necessary values.
-7. Now you can restart your instance or manually start the docker container to get the server to run. Upon starting the server,
+7. Now you will want to move the `server_update.sh` file to the home directory and run the following command:
+```bash
+cp ./server_code/scripts/server_update.sh .
+chmod +x server_update.sh
+```
+8. Now you can restart your instance or manually start the docker container to get the server to run. Upon starting the server,
 the server will be accessible at the public IP address of the instance.
 
 ---

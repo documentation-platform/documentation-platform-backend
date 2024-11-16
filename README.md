@@ -24,8 +24,9 @@ This repository stores all the code for the MarkDock API.
 
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
 - [Development](#development)
+- [Reset Development Environment ](#reset-development-environment)
+- [Project Structure](#project-structure)
 - [Testing](#testing)
 
 ## Prerequisites
@@ -58,11 +59,21 @@ This repository stores all the code for the MarkDock API.
 - Go to **Settings > Build, Execution, Deployment > Compiler** and enable **Build project automatically**.
 - Then, go to **Advanced Settings** and check **Allow auto-make to start even if the developed application is currently running**.
 
+## Development
+
+For local development, use the `compose.yaml` file:
+
+```bash
+docker compose up
+```
+
+This will start both the MySQL database and the Spring Boot application in development mode.
+
 ## Reset Development Environment
 If you want to reset the development environment, you can run the following command:
 
 ```bash
-./dev_reset.sh
+./scripts/dev_reset.sh
 ```
 
 This script will remove the backend containers, remove the volumes, fix the `.env` file, and start the development environment again.
@@ -75,16 +86,6 @@ The main project structure is as follows:
 - `src/` - Source code
 - `migrations/` - Flyway database migrations
 - `pom.xml` - Maven dependencies
-
-## Development
-
-For local development, use the `compose.yaml` file:
-
-```bash
-docker compose up
-```
-
-This will start both the MySQL database and the Spring Boot application in development mode.
 
 ## Testing
 

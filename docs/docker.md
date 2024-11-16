@@ -62,7 +62,7 @@ services:
 ### Key Features:
 - MySQL 8.0 database with health check
 - Spring Boot application using OpenJDK 21
-- Code sync between host and container
+- 
 - Environment variables for database configuration
 - Flyway migrations support
 
