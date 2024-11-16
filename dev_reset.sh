@@ -14,10 +14,22 @@ fi
 
 echo " "
 echo "-----------------------------------------------------"
-echo "Stopping and removing containers..."
+echo "Checking Docker Status"
 echo "-----------------------------------------------------"
 echo " "
-docker-compose down
+
+if ! docker --version
+then
+  echo "Docker is not running. Please start Docker and try again."
+  exit 1
+fi
+
+echo " "
+echo "-----------------------------------------------------"
+echo "Stopping containers..."
+echo "-----------------------------------------------------"
+echo " "
+docker compose down
 
 echo " "
 echo "-----------------------------------------------------"
@@ -42,4 +54,4 @@ echo "-----------------------------------------------------"
 echo "Rebuilding and starting containers... (You can stop this process with Ctrl+C)"
 echo "-----------------------------------------------------"
 echo " "
-docker-compose up --build
+docker compose up --build
