@@ -9,6 +9,7 @@ import com.org.project.model.auth.AccessToken;
 import com.org.project.dto.LoginRequestDTO;
 import com.org.project.model.auth.RefreshToken;
 import com.org.project.dto.RegisterRequestDTO;
+import com.org.project.security.OrganizationAuthorizationFilter;
 import com.org.project.service.AuthService;
 import com.org.project.service.UserService;
 import com.org.project.util.AuthUtil;
@@ -20,8 +21,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -31,12 +34,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @WebMvcTest(AuthController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class AuthControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private OrganizationAuthorizationFilter organizationAuthorizationFilter;
 
     @MockBean
     private AuthService authService;

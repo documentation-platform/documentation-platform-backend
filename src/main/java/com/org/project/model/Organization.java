@@ -10,15 +10,15 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Table(name = "organization")
 public class Organization {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Integer id;
+    @Column(name = "id", length = 36, updatable = false, nullable = false)
+    private String id;
 
     @Column(name = "name")
     private String name;
@@ -31,18 +31,20 @@ public class Organization {
     @UpdateTimestamp
     private Date updatedAt;
 
-    public Organization() {}
+    public Organization() {
+        this.id = UUID.randomUUID().toString();
+    }
 
     public Organization(String name) {
+        this.id = UUID.randomUUID().toString();
         this.name = name;
     }
 
-    // Getters and setters
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 

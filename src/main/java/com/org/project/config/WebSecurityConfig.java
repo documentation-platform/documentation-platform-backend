@@ -1,5 +1,6 @@
 package com.org.project.config;
 
+import com.org.project.security.OrganizationAuthorizationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +25,9 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Autowired
     public JWTAuthorizationFilter jwtAuthorizationFilter;
 
+    @Autowired
+    public OrganizationAuthorizationFilter organizationAuthorizationFilter;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -34,7 +38,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(organizationAuthorizationFilter, JWTAuthorizationFilter.class);
 
         return http.build();
     }

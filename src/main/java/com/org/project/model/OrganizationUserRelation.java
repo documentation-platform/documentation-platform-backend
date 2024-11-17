@@ -15,7 +15,7 @@ public class OrganizationUserRelation {
     private String userId;  // Foreign key referencing User's id (String)
 
     @Column(name = "organization_id", nullable = false)
-    private Integer organizationId;  // Foreign key referencing Organization's id (Integer)
+    private String organizationId;  // Foreign key referencing Organization's id (Integer)
 
     @Column(name = "access_id", nullable = false)
     private Integer accessId;  // Foreign key referencing Access's id (Integer)
@@ -47,11 +47,11 @@ public class OrganizationUserRelation {
         this.userId = userId;
     }
 
-    public Integer getOrganizationId() {
+    public String getOrganizationId() {
         return organizationId;
     }
 
-    public void setOrganizationId(Integer organizationId) {
+    public void setOrganizationId(String organizationId) {
         this.organizationId = organizationId;
     }
 

@@ -4,7 +4,6 @@ import com.org.project.exception.AccountExistsException;
 import com.org.project.model.OrganizationUserRelation;
 import com.org.project.model.User;
 import com.org.project.dto.RegisterRequestDTO;
-import com.org.project.repository.OrganizationRepository;
 import com.org.project.repository.OrganizationUserRelationRepository;
 import com.org.project.repository.UserRepository;
 
@@ -58,12 +57,11 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public Boolean isUserOrganizationAdmin(String userId, int organizationId){
-        Integer userAccessLevel = getAccessId(userId, organizationId);
-        return (userAccessLevel == 1);
+    public OrganizationUserRelation isUserOrganizationMember(String userId, String organizationId){
+        return organizationUserRelationRepository.findByUserIdAndOrganizationId(userId, organizationId);
     }
 
-    public Integer getAccessId(String userId, Integer organizationId) {
+    public Integer getAccessId(String userId, String organizationId) {
         OrganizationUserRelation relation = organizationUserRelationRepository.findByUserIdAndOrganizationId(userId, organizationId);
         return (relation != null) ? relation.getAccessId() : null;
     }
