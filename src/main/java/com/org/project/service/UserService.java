@@ -58,12 +58,11 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public Boolean isUserOrganizationAdmin(String userId, int organizationId){
-        Integer userAccessLevel = getAccessId(userId, organizationId);
-        return (userAccessLevel == 1);
+    public OrganizationUserRelation isUserOrganizationMember(String userId, String organizationId){
+        return organizationUserRelationRepository.findByUserIdAndOrganizationId(userId, organizationId);
     }
 
-    public Integer getAccessId(String userId, Integer organizationId) {
+    public Integer getAccessId(String userId, String organizationId) {
         OrganizationUserRelation relation = organizationUserRelationRepository.findByUserIdAndOrganizationId(userId, organizationId);
         return (relation != null) ? relation.getAccessId() : null;
     }

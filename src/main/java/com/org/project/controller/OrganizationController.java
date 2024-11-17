@@ -48,11 +48,6 @@ public class OrganizationController {
     public ResponseEntity<Map<String, Object>> getOrganizationsByUserId(HttpServletRequest request) {
         String userId = (String) request.getAttribute("user_id");
 
-        // Check if userId exists
-        if (userId == null || userId.isEmpty()) {
-            return new ResponseEntity<>(Map.of("error", "User ID is required"), HttpStatus.BAD_REQUEST);
-        }
-
         // Fetch all OrganizationUserRelation records for the given userId
         List<OrganizationUserRelation> userRelations = OrganizationUserRelationRepository.findByUserId(userId);
 
@@ -62,7 +57,7 @@ public class OrganizationController {
         }
 
         // Extract the organizationIds from the relations
-        List<Integer> organizationIds = userRelations.stream()
+        List<String> organizationIds = userRelations.stream()
                 .map(OrganizationUserRelation::getOrganizationId)
                 .collect(Collectors.toList());
 
@@ -135,7 +130,7 @@ public class OrganizationController {
         //create the org and grab the id of new org
         Organization newOrganization = new Organization(name);
         organizationRepository.save(newOrganization);
-        Integer organizationId = newOrganization.getId();
+        String organizationId = newOrganization.getId();
 
         Map<String, Object> response = new HashMap<>();
         response.put("organization", newOrganization);
@@ -150,11 +145,11 @@ public class OrganizationController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // Create an invite link
     @OrganizationAdmin
-    @PostMapping("/create-invite-link")
-    public ResponseEntity<Map<String, Object>> createInviteLink(@RequestBody Map<String, Integer> request) {
-        Integer organizationId = request.get("organizationId");
+    @PostMapping("/{org_id}/create-invite-link")
+    public ResponseEntity<Map<String, Object>> createInviteLink(
+            @PathVariable("org_id") String organizationId,
+            @RequestBody Map<String, Integer> request) {
         Integer accessId = request.get("accessId");
 
         // Validate if the organization exists
