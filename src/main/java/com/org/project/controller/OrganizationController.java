@@ -149,8 +149,7 @@ public class OrganizationController {
     @PostMapping("/{org_id}/create-invite-link")
     public ResponseEntity<Map<String, Object>> createInviteLink(
             @PathVariable("org_id") String organizationId,
-            @RequestBody Map<String, Integer> request) {
-        Integer accessId = request.get("accessId");
+            @RequestParam("accessId") Integer accessId) {
 
         // Validate if the organization exists
         Organization organization = organizationRepository.findById(organizationId).orElse(null);
