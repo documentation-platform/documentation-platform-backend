@@ -4,7 +4,6 @@ import com.org.project.exception.AccountExistsException;
 import com.org.project.model.OrganizationUserRelation;
 import com.org.project.model.User;
 import com.org.project.dto.RegisterRequestDTO;
-import com.org.project.repository.OrganizationRepository;
 import com.org.project.repository.OrganizationUserRelationRepository;
 import com.org.project.repository.UserRepository;
 

@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @RestController
 @RequestMapping("/organization")
 public class OrganizationController {
