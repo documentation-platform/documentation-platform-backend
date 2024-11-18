@@ -43,11 +43,11 @@ public class OrganizationAuthorizationFilter extends OncePerRequestFilter {
         return requestURI.matches(pattern);
     }
 
-    private boolean handleOrganizationRequest(HttpServletRequest request, HttpServletResponse response, String organizationId) {
+    private boolean handleOrganizationRequest(HttpServletRequest request, HttpServletResponse response, String organizationId) throws IOException {
         String userId = (String) request.getAttribute("user_id");
 
-        if (userId == null || organizationId == null) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        if (organizationId == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing organization_id in request path");
             return false;
         }
 
@@ -55,7 +55,7 @@ public class OrganizationAuthorizationFilter extends OncePerRequestFilter {
                 organizationService.getUserOrganizationRelation(userId, organizationId);
 
         if (userOrganizationRelation == null) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "User does not have access to this organization");
             return false;
         }
 
