@@ -24,7 +24,7 @@ jobs:
           command: "compute instance action --instance-id ${{ secrets.OCI_INSTANCE_ONE_OCID }} --action SOFTRESET"
 
       - name: Allow time for server to restart
-        run: sleep 300
+        run: sleep 360
 
       - name: Check Server 1 Health
         uses: oracle-actions/run-oci-cli-command@v1.1.1
@@ -51,7 +51,7 @@ jobs:
           command: "compute instance action --instance-id ${{ secrets.OCI_INSTANCE_TWO_OCID }} --action SOFTRESET"
 
       - name: Allow time for server to restart
-        run: sleep 300
+        run: sleep 360
 
       - name: Check Server 2 Health
         uses: oracle-actions/run-oci-cli-command@v1.1.1
