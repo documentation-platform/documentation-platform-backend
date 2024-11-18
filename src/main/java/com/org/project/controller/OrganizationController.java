@@ -6,6 +6,7 @@ import com.org.project.model.Organization;
 import com.org.project.model.OrganizationUserRelation;
 import com.org.project.repository.*;
 import com.org.project.security.organization.OrganizationAdmin;
+import com.org.project.security.organization.OrganizationEditor;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
