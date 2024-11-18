@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+import static com.org.project.util.OrganizationUtil.*;
+
 @Aspect
 @Component
 public class OrganizationViewerAspect {
@@ -25,8 +27,12 @@ public class OrganizationViewerAspect {
     public void checkViewerRole() throws IOException {
         Integer organization_access_id = (Integer) request.getAttribute("user_organization_access_id");
 
-        if (!(organization_access_id <= OrganizationUtil.ORGANIZATION_VIEWER_ROLE_ID)) {
+        if (!hasViewerAccess(organization_access_id)) {
             response.sendError(HttpStatus.FORBIDDEN.value(), "User does not have viewer access level to this organization");
         }
+    }
+
+    public static boolean hasViewerAccess(int accessId) {
+        return accessId >= ORGANIZATION_ADMIN_ROLE_ID && accessId <= ORGANIZATION_VIEWER_ROLE_ID;
     }
 }

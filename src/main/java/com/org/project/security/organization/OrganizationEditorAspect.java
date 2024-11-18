@@ -1,6 +1,5 @@
 package com.org.project.security.organization;
 
-import com.org.project.util.OrganizationUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.aspectj.lang.annotation.Aspect;
@@ -10,6 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+
+import static com.org.project.util.OrganizationUtil.ORGANIZATION_ADMIN_ROLE_ID;
+import static com.org.project.util.OrganizationUtil.ORGANIZATION_EDITOR_ROLE_ID;
 
 @Aspect
 @Component
@@ -25,8 +27,12 @@ public class OrganizationEditorAspect {
     public void checkEditorRole() throws IOException {
         Integer organization_access_id = (Integer) request.getAttribute("user_organization_access_id");
 
-        if (!(organization_access_id <= OrganizationUtil.ORGANIZATION_EDITOR_ROLE_ID)) {
+        if (!hasEditorAccess(organization_access_id)) {
             response.sendError(HttpStatus.FORBIDDEN.value(), "User does not have editor access level to this organization");
         }
+    }
+
+    public static boolean hasEditorAccess(int accessId) {
+        return accessId >= ORGANIZATION_ADMIN_ROLE_ID && accessId <= ORGANIZATION_EDITOR_ROLE_ID;
     }
 }
