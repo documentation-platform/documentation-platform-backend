@@ -83,7 +83,8 @@ public class OrganizationController {
             Map<String, Object> orgDetails = new HashMap<>();
             orgDetails.put("id", organization.getId());
             orgDetails.put("name", organization.getName());
-            orgDetails.put("access", access.getName()); // Include access name
+            orgDetails.put("access", access.getName());
+            orgDetails.put("accessId", access.getId());
             orgDetails.put("createdAt", organization.getCreatedAt());
             orgDetails.put("updatedAt", organization.getUpdatedAt());
 
@@ -237,6 +238,46 @@ public class OrganizationController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @OrganizationAdmin
+    @GetMapping("/{org_id}/get-invite-links")
+    public ResponseEntity<Map<String, Object>> getInviteLinks(@PathVariable("org_id") String organizationId) {
+        // Validate if the organization exists
+        Organization organization = organizationRepository.findById(organizationId).orElse(null);
+        if (organization == null) {
+            return new ResponseEntity<>(Map.of("error", "Organization not found"), HttpStatus.NOT_FOUND);
+        }
+
+        // Retrieve all invites for the organization
+        List<Invite> invites = InviteRepository.findByOrganization(organization);
+
+        // Check if there are any invites
+        if (invites.isEmpty()) {
+            return new ResponseEntity<>(Map.of("message", "No invites found for this organization"), HttpStatus.OK);
+        }
+
+        // Prepare the response
+        List<Map<String, Object>> inviteLinks = invites.stream()
+                .map(invite -> {
+                    Map<String, Object> inviteInfo = new HashMap<>();
+                    inviteInfo.put("inviteToken", invite.getId());  // Invite Token
+                    inviteInfo.put("accessId", invite.getAccess().getId());  // Access ID
+                    inviteInfo.put("inviteLink", baseUrl + "invite?token=" + invite.getId());  // Generated invite link
+                    inviteInfo.put("currentCount", invite.getCurrentCount());  // Current invite count
+                    inviteInfo.put("maxCount", invite.getMaxCount());  // Max count
+                    inviteInfo.put("expiresAt", invite.getExpiresAt());  // Expiration (if set)
+                    return inviteInfo;
+                })
+                .collect(Collectors.toList());
+
+        // Prepare the response body
+        Map<String, Object> response = new HashMap<>();
+        response.put("organizationId", organizationId);
+        response.put("inviteLinks", inviteLinks);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 }
 
 
