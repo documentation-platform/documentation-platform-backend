@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.Date;
 import java.util.UUID;
@@ -17,6 +18,7 @@ import java.util.UUID;
 public class Organization {
 
     @Id
+    @UuidGenerator
     @Column(name = "id", length = 36, updatable = false, nullable = false)
     private String id;
 
@@ -31,10 +33,6 @@ public class Organization {
     @UpdateTimestamp
     private Date updatedAt;
 
-    public Organization() {
-        this.id = UUID.randomUUID().toString();
-    }
-
     public Organization(String name) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
@@ -42,10 +40,6 @@ public class Organization {
 
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getName() {

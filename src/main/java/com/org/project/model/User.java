@@ -1,26 +1,21 @@
 package com.org.project.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
-import jakarta.persistence.PrePersist;
+import jakarta.persistence.*;
 
 import com.org.project.util.PasswordUtil;
 import com.org.project.util.AuthUtil;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Table(name = "users")
 public class User {
 
 	@Id
+	@UuidGenerator
 	@Column(name = "id", length = 36, updatable = false, nullable = false)
 	private String id;
 
@@ -53,16 +48,8 @@ public class User {
 		authVersion = AuthUtil.generateRandomAuthVersion();
 	}
 
-	public User() {
-		this.id = UUID.randomUUID().toString();
-	}
-
 	public String getId() {
 		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
 	}
 
 	public String getName() {
