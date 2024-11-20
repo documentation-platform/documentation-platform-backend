@@ -133,6 +133,8 @@ public class AuthControllerTest extends BaseControllerTest {
         @Test
         public void testRefreshSuccess() throws Exception {
             when(authUtil.getTokenFromCookie(any(), eq(AuthController.REFRESH_TOKEN_COOKIE_NAME))).thenReturn(refreshTokenCookie.getValue());
+            when(authUtil.getUserIdFromRefreshToken(any())).thenReturn(testUser.getId());
+            when(userService.getUserFromId(testUser.getId())).thenReturn(testUser);
             when(authUtil.isRefreshTokenValid(any())).thenReturn(true);
             when(authUtil.isRefreshTokenAuthVersionValid(any(), any())).thenReturn(true);
 
@@ -169,19 +171,19 @@ public class AuthControllerTest extends BaseControllerTest {
     }
 
     private AccessToken createAccessToken() {
-        return new AccessToken("testId", "divyematsBHqHUxi6QD5D811iWH7qNxUW9U/QboseFw=", 3600);
+        return new AccessToken(testUser.getId(), "divyematsBHqHUxi6QD5D811iWH7qNxUW9U/QboseFw=", 3600);
     }
 
     private RefreshToken createRefreshToken() {
-        return new RefreshToken("testId", 1, "divyematsBHqHUxi6QD5D811iWH7qNxUW9U/QboseFw=", 86400);
+        return new RefreshToken(testUser.getId(), 1, "divyematsBHqHUxi6QD5D811iWH7qNxUW9U/QboseFw=", 86400);
     }
 
     public void setupTokenMocks() {
         AccessToken accessToken = createAccessToken();
         RefreshToken refreshToken = createRefreshToken();
 
-        when(authUtil.createAccessToken("testId")).thenReturn(accessToken);
-        when(authUtil.createRefreshToken("testId", 1)).thenReturn(refreshToken);
+        when(authUtil.createAccessToken(testUser.getId())).thenReturn(accessToken);
+        when(authUtil.createRefreshToken(testUser.getId(), 1)).thenReturn(refreshToken);
 
         Cookie accessTokenCookie = new Cookie("JWT_Access_Token", accessToken.token);
         refreshTokenCookie = new Cookie("JWT_Refresh_Token", refreshToken.token);

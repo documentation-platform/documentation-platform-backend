@@ -34,7 +34,6 @@ public class Organization {
     private Date updatedAt;
 
     public Organization(String name) {
-        this.id = UUID.randomUUID().toString();
         this.name = name;
     }
 
