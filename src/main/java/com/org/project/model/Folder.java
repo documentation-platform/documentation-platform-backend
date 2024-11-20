@@ -3,15 +3,16 @@ package com.org.project.model;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Table(name = "folder")
 public class Folder{
 
     @Id
+    @UuidGenerator
     @Column(name = "id", length = 36, updatable = false, nullable = false)
     private String id;
 
@@ -34,16 +35,8 @@ public class Folder{
     @UpdateTimestamp
     private Date updatedAt;
 
-    public Folder() {
-        this.id = UUID.randomUUID().toString();
-    }
-
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getName() {
