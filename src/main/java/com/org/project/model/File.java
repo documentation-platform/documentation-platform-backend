@@ -23,6 +23,10 @@ public class File{
     @JoinColumn(name = "folder_id", referencedColumnName = "id")
     private Folder folder;
 
+    @ManyToOne
+    @JoinColumn(name = "creation_user_id", referencedColumnName = "id")
+    private User creationUser;
+
     @Column(name = "created_at")
     @CreationTimestamp
     private Date createdAt;
@@ -30,7 +34,11 @@ public class File{
     @Column(name = "updated_at")
     @UpdateTimestamp
     private Date updatedAt;
-    public File(){}
+
+    public File() {
+        this.name = "Untitled Document";
+    }
+
     public String getId() {
         return id;
     }
@@ -49,6 +57,14 @@ public class File{
 
     public void setFolder(Folder folder) {
         this.folder = folder;
+    }
+
+    public User getCreationUser() {
+        return creationUser;
+    }
+
+    public void setCreationUser(User creationUser) {
+        this.creationUser = creationUser;
     }
 
     public Date getCreatedAt() {

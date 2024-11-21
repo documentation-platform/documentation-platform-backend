@@ -34,7 +34,9 @@ public class Folder{
     @Column(name = "updated_at")
     @UpdateTimestamp
     private Date updatedAt;
+
     public Folder(){}
+
     public String getId() {
         return id;
     }

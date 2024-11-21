@@ -11,7 +11,7 @@ import org.hibernate.annotations.UuidGenerator;
 import java.util.Date;
 
 @Entity
-@Table(name = "users")
+@Table(name = "user")
 public class User {
 
 	@Id
@@ -43,11 +43,12 @@ public class User {
 	@Column(name = "updated_at")
 	private Date updatedAt;
 
-	public User(){}
 	@PrePersist
 	protected void onCreate() {
 		authVersion = AuthUtil.generateRandomAuthVersion();
 	}
+
+	public User() {}
 
 	public String getId() {
 		return id;
