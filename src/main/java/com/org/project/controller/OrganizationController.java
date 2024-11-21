@@ -4,6 +4,8 @@ import com.org.project.model.*;
 import com.org.project.repository.*;
 import com.org.project.security.organization.OrganizationAdmin;
 import com.org.project.security.organization.OrganizationEditor;
+import com.org.project.service.DocumentService;
+import com.org.project.service.OrganizationService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,12 @@ public class OrganizationController {
 
     @Autowired
     private OrganizationUserRelationRepository OrganizationUserRelationRepository;
+
+    @Autowired
+    private OrganizationService organizationService;
+
+    @Autowired
+    private DocumentService documentService;
 
     @Autowired
     private AccessRepository AccessRepository;
@@ -136,6 +144,8 @@ public class OrganizationController {
         Organization newOrganization = new Organization(name);
         organizationRepository.save(newOrganization);
         String organizationId = newOrganization.getId();
+
+        organizationService.createOrganizationRootFolder(organizationId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("organization", newOrganization);
@@ -282,6 +292,23 @@ public class OrganizationController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @OrganizationEditor
+    @PostMapping("/{org_id}/create-document")
+    public ResponseEntity<Map<String, Object>> createDocument(
+            @PathVariable("org_id") String organizationId,
+            HttpServletRequest securedRequest
+    ) {
+        String userId = (String) securedRequest.getAttribute("user_id");
+        File newOrganizationDocument = documentService.createOrganizationDocument(userId, organizationId);
+
+        if (newOrganizationDocument == null) {
+            return new ResponseEntity<>(Map.of("error", "Failed to create document"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("document_id", newOrganizationDocument.getId());
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
 }
 
 
