@@ -30,7 +30,7 @@ public class File{
     @Column(name = "updated_at")
     @UpdateTimestamp
     private Date updatedAt;
-
+    public File(){}
     public String getId() {
         return id;
     }
