@@ -33,6 +33,8 @@ public class Organization {
     @UpdateTimestamp
     private Date updatedAt;
 
+    public Organization() {}
+
     public Organization(String name) {
         this.name = name;
     }

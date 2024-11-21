@@ -1,9 +1,6 @@
 package com.org.project.controller;
 
-import com.org.project.model.Access;
-import com.org.project.model.Invite;
-import com.org.project.model.Organization;
-import com.org.project.model.OrganizationUserRelation;
+import com.org.project.model.*;
 import com.org.project.repository.*;
 import com.org.project.security.organization.OrganizationAdmin;
 import com.org.project.security.organization.OrganizationEditor;
@@ -32,6 +29,9 @@ public class OrganizationController {
 
     @Autowired
     private InviteRepository InviteRepository;
+
+    @Autowired
+    private UserRepository UserRepository;
 
     @Value("${WEB_APPLICATION_URL}")
     private String baseUrl;
@@ -100,8 +100,12 @@ public class OrganizationController {
                     Access memberAccess = AccessRepository.findById(orgRelation.getAccessId())
                             .orElseThrow(() -> new RuntimeException("Access level not found for member"));
 
+                    // Fetch the username based on the userId
+                    User member = UserRepository.findById(memberId);
+
                     Map<String, Object> memberDetails = new HashMap<>();
                     memberDetails.put("userId", memberId);
+                    memberDetails.put("userName", member.getName());
                     memberDetails.put("access", memberAccess.getName());
 
                     members.add(memberDetails);

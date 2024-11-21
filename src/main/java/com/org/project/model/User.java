@@ -43,6 +43,7 @@ public class User {
 	@Column(name = "updated_at")
 	private Date updatedAt;
 
+	public User(){}
 	@PrePersist
 	protected void onCreate() {
 		authVersion = AuthUtil.generateRandomAuthVersion();
