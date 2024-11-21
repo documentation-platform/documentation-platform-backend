@@ -53,7 +53,6 @@ public class AuthControllerTest extends BaseControllerTest {
     @BeforeEach
     void setUp() {
         testUser = new User();
-        testUser.setId("testId");
         testUser.setEmail("test@example.com");
         testUser.setProvider(User.Provider.LOCAL);
         testUser.setAuthVersion(1);
@@ -76,7 +75,6 @@ public class AuthControllerTest extends BaseControllerTest {
                             .content(objectMapper.writeValueAsString(loginRequest)))
                     .andExpect(status().isAccepted())
                     .andExpect(jsonPath("$.message").value("Login successful"))
-                    .andExpect(jsonPath("$.id").value("testId"))
                     .andExpect(jsonPath("$.email").value("test@example.com"))
                     .andExpect(jsonPath("$.provider").value("LOCAL"))
                     .andExpect(cookie().exists("JWT_Access_Token"))
@@ -112,7 +110,6 @@ public class AuthControllerTest extends BaseControllerTest {
                             .content(objectMapper.writeValueAsString(registerRequest)))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.message").value("User successfully registered"))
-                    .andExpect(jsonPath("$.id").value("testId"))
                     .andExpect(jsonPath("$.email").value("test@example.com"))
                     .andExpect(jsonPath("$.provider").value("LOCAL"))
                     .andExpect(cookie().exists("JWT_Access_Token"))
@@ -136,8 +133,8 @@ public class AuthControllerTest extends BaseControllerTest {
         @Test
         public void testRefreshSuccess() throws Exception {
             when(authUtil.getTokenFromCookie(any(), eq(AuthController.REFRESH_TOKEN_COOKIE_NAME))).thenReturn(refreshTokenCookie.getValue());
-            when(authUtil.getUserIdFromRefreshToken(any())).thenReturn("testId");
-            when(userService.getUserFromId("testId")).thenReturn(testUser);
+            when(authUtil.getUserIdFromRefreshToken(any())).thenReturn(testUser.getId());
+            when(userService.getUserFromId(testUser.getId())).thenReturn(testUser);
             when(authUtil.isRefreshTokenValid(any())).thenReturn(true);
             when(authUtil.isRefreshTokenAuthVersionValid(any(), any())).thenReturn(true);
 
@@ -145,7 +142,6 @@ public class AuthControllerTest extends BaseControllerTest {
                             .cookie(new jakarta.servlet.http.Cookie("JWT_Refresh_Token", "valid_token")))
                     .andExpect(status().isAccepted())
                     .andExpect(jsonPath("$.message").value("User refresh successful"))
-                    .andExpect(jsonPath("$.id").value("testId"))
                     .andExpect(jsonPath("$.email").value("test@example.com"))
                     .andExpect(jsonPath("$.provider").value("LOCAL"))
                     .andExpect(cookie().exists("JWT_Access_Token"))
@@ -164,8 +160,6 @@ public class AuthControllerTest extends BaseControllerTest {
         @Test
         public void testRefreshFailureInvalidToken() throws Exception {
             when(authUtil.getTokenFromCookie(any(), eq(AuthController.REFRESH_TOKEN_COOKIE_NAME))).thenReturn("invalid_token");
-            when(authUtil.getUserIdFromRefreshToken(any())).thenReturn("testId");
-            when(userService.getUserFromId("testId")).thenReturn(testUser);
             when(authUtil.isRefreshTokenValid(any())).thenReturn(false);
             when(authUtil.isRefreshTokenAuthVersionValid(any(), any())).thenReturn(false);
 
@@ -177,19 +171,19 @@ public class AuthControllerTest extends BaseControllerTest {
     }
 
     private AccessToken createAccessToken() {
-        return new AccessToken("testId", "divyematsBHqHUxi6QD5D811iWH7qNxUW9U/QboseFw=", 3600);
+        return new AccessToken(testUser.getId(), "divyematsBHqHUxi6QD5D811iWH7qNxUW9U/QboseFw=", 3600);
     }
 
     private RefreshToken createRefreshToken() {
-        return new RefreshToken("testId", 1, "divyematsBHqHUxi6QD5D811iWH7qNxUW9U/QboseFw=", 86400);
+        return new RefreshToken(testUser.getId(), 1, "divyematsBHqHUxi6QD5D811iWH7qNxUW9U/QboseFw=", 86400);
     }
 
     public void setupTokenMocks() {
         AccessToken accessToken = createAccessToken();
         RefreshToken refreshToken = createRefreshToken();
 
-        when(authUtil.createAccessToken("testId")).thenReturn(accessToken);
-        when(authUtil.createRefreshToken("testId", 1)).thenReturn(refreshToken);
+        when(authUtil.createAccessToken(testUser.getId())).thenReturn(accessToken);
+        when(authUtil.createRefreshToken(testUser.getId(), 1)).thenReturn(refreshToken);
 
         Cookie accessTokenCookie = new Cookie("JWT_Access_Token", accessToken.token);
         refreshTokenCookie = new Cookie("JWT_Refresh_Token", refreshToken.token);

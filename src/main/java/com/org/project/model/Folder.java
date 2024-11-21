@@ -1,21 +1,15 @@
 package com.org.project.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
-@Table(name = "organization")
-public class Organization {
+@Table(name = "folder")
+public class Folder{
 
     @Id
     @UuidGenerator
@@ -25,6 +19,14 @@ public class Organization {
     @Column(name = "name")
     private String name;
 
+    @ManyToOne
+    @JoinColumn(name = "parent_id", referencedColumnName = "id")
+    private Folder parentFolder;
+
+    @ManyToOne
+    @JoinColumn(name = "organization_id", referencedColumnName = "id")
+    private Organization organization;
+
     @Column(name = "created_at")
     @CreationTimestamp
     private Date createdAt;
@@ -32,10 +34,6 @@ public class Organization {
     @Column(name = "updated_at")
     @UpdateTimestamp
     private Date updatedAt;
-
-    public Organization(String name) {
-        this.name = name;
-    }
 
     public String getId() {
         return id;
@@ -49,20 +47,27 @@ public class Organization {
         this.name = name;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
+    public Folder getParentFolder() {
+        return parentFolder;
     }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
+    public void setParentFolder(Folder parentFolder) {
+        this.parentFolder = parentFolder;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
     public Date getUpdatedAt() {
         return updatedAt;
     }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
 }
-
