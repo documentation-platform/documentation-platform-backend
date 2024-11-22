@@ -21,10 +21,6 @@ public class FileContentRelation {
     @Column(name = "text_content", columnDefinition = "TEXT")
     private String textContent;
 
-    @ManyToOne
-    @JoinColumn(name = "updated_user_id", referencedColumnName = "id", nullable = false)
-    private User updatedUser;
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Date createdAt;
@@ -55,14 +51,6 @@ public class FileContentRelation {
 
     public void setTextContent(String textContent) {
         this.textContent = textContent;
-    }
-
-    public User getUpdatedUser() {
-        return updatedUser;
-    }
-
-    public void setUpdatedUser(User updatedUser) {
-        this.updatedUser = updatedUser;
     }
 
     public Date getCreatedAt() {
