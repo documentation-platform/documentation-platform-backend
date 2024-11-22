@@ -77,7 +77,7 @@ public class DocumentService {
     }
 
     @Transactional
-    public boolean updateDocumentName(String documentId, String newName) {
+    public boolean updateDocumentName(String userId, String documentId, String newName) {
         File file = fileRepository.findById(documentId).orElse(null);
 
         if (file == null) {
@@ -85,12 +85,15 @@ public class DocumentService {
         }
 
         file.setName(newName);
+        file.setUpdatedUser(entityManager.getReference(User.class, userId));
         fileRepository.save(file);
         return true;
     }
 
     @Transactional
     public boolean deleteDocument(String documentId) {
+        // TODO: Add history record for deletion
+
         FileContentRelation fileContentRelation = fileContentRelationRepository.findById(documentId).orElse(null);
         File file = fileRepository.findById(documentId).orElse(null);
 
@@ -112,8 +115,13 @@ public class DocumentService {
         }
 
         fileContentRelation.setTextContent(newContent);
-        fileContentRelation.setUpdatedUser(entityManager.getReference(User.class, userId));
         fileContentRelationRepository.save(fileContentRelation);
+
+        fileRepository.findById(documentId).ifPresent(file -> {
+            file.setUpdatedUser(entityManager.getReference(User.class, userId));
+            fileRepository.save(file);
+        });
+
         return true;
     }
 
@@ -124,12 +132,12 @@ public class DocumentService {
         File file = new File();
         file.setFolder(folder);
         file.setCreationUser(user);
+        file.setUpdatedUser(user);
         File newFile = fileRepository.save(file);
 
         FileContentRelation fileContentRelation = new FileContentRelation();
         fileContentRelation.setFileId(newFile.getId());
         fileContentRelation.setFile(newFile);
-        fileContentRelation.setUpdatedUser(user);
         fileContentRelation.setTextContent("");
         fileContentRelationRepository.save(fileContentRelation);
         return file;

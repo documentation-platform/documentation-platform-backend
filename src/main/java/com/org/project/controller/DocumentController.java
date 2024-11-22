@@ -79,7 +79,7 @@ public class DocumentController {
 
         String newFileName = (String) requestBody.get("newName");
 
-        boolean fileWasUpdated = documentService.updateDocumentName(documentId, newFileName);
+        boolean fileWasUpdated = documentService.updateDocumentName(userId, documentId, newFileName);
 
         if (!fileWasUpdated) {
             return ResponseEntity.status(500).body(Map.of("error", "An error occurred while updating the document"));

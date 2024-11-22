@@ -27,6 +27,10 @@ public class File{
     @JoinColumn(name = "creation_user_id", referencedColumnName = "id")
     private User creationUser;
 
+    @ManyToOne
+    @JoinColumn(name = "updated_user_id", referencedColumnName = "id", nullable = false)
+    private User updatedUser;
+
     @Column(name = "created_at")
     @CreationTimestamp
     private Date createdAt;
@@ -65,6 +69,14 @@ public class File{
 
     public void setCreationUser(User creationUser) {
         this.creationUser = creationUser;
+    }
+
+    public User getUpdatedUser() {
+        return updatedUser;
+    }
+
+    public void setUpdatedUser(User updatedUser) {
+        this.updatedUser = updatedUser;
     }
 
     public Date getCreatedAt() {
