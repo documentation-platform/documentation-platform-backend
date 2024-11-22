@@ -93,4 +93,24 @@ public class DocumentController {
 
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{document_id}/delete")
+    public ResponseEntity<Map<String, Object>> deleteDocument(
+            @PathVariable("document_id") String documentId,
+            HttpServletRequest request
+    ){
+        String userId = (String) request.getAttribute("user_id");
+
+        if (!documentService.canUserEditDocument(userId, documentId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "You do not have permission to delete this document"));
+        }
+
+        boolean fileWasDeleted = documentService.deleteDocument(documentId);
+
+        if (!fileWasDeleted) {
+            return ResponseEntity.status(500).body(Map.of("error", "An error occurred while deleting the document"));
+        }
+
+        return ResponseEntity.ok(Map.of("message", "Document deleted successfully"));
+    }
 }

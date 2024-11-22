@@ -1,12 +1,9 @@
 package com.org.project.service;
 
-import com.org.project.controller.AuthController;
 import com.org.project.model.*;
 import com.org.project.repository.FileContentRelationRepository;
 import com.org.project.repository.FileRepository;
 import com.org.project.repository.OrganizationUserRelationRepository;
-import com.org.project.security.organization.OrganizationEditor;
-import com.org.project.util.AuthUtil;
 import com.org.project.util.OrganizationUtil;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +50,6 @@ public class DocumentService {
         FileContentRelation fileContentRelation = fileContentRelationRepository.findById(documentId).orElse(null);
 
         if (fileContentRelation == null) {
-            // Throw an exception if the file content relation is not found
             throw new RuntimeException("File content not found");
         }
 
@@ -85,7 +81,7 @@ public class DocumentService {
         File file = fileRepository.findById(documentId).orElse(null);
 
         if (file == null) {
-            throw new RuntimeException("File not found");
+            return false;
         }
 
         file.setName(newName);
@@ -93,6 +89,19 @@ public class DocumentService {
         return true;
     }
 
+    @Transactional
+    public boolean deleteDocument(String documentId) {
+        FileContentRelation fileContentRelation = fileContentRelationRepository.findById(documentId).orElse(null);
+        File file = fileRepository.findById(documentId).orElse(null);
+
+        if (file == null || fileContentRelation == null) {
+            return false;
+        }
+
+        fileContentRelationRepository.delete(fileContentRelation);
+        fileRepository.delete(file);
+        return true;
+    }
 
     @Transactional
     public boolean updateDocumentContent(String userId, String documentId, String newContent) {
