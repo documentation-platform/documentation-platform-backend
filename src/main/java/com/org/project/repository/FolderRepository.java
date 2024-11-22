@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface FolderRepository extends JpaRepository<Folder, Integer> {
+public interface FolderRepository extends JpaRepository<Folder, String> {
     Folder findByOrganizationIdAndParentFolderIsNull(String organizationId);
 }
