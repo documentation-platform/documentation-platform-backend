@@ -68,21 +68,33 @@ public class DocumentService {
     public boolean canUserEditDocument(String userId, String documentId) {
         File file = fileRepository.findById(documentId).orElse(null);
 
-        if (file == null || file.getFolder().getOrganization() == null) {
+        if (file == null) {
             return false;
         }
 
+        Folder parentFolder = file.getFolder();
+
+        if (parentFolder == null) {
+            return false;
+        }
+
+        if (parentFolder.getOrganization() != null){
+            return canUserEditOrganizationDocument(userId, parentFolder.getOrganization().getId());
+        }
+
+        return parentFolder.getUser().getId().equals(userId);
+    }
+
+    public boolean canUserEditOrganizationDocument(String userId, String organizationId){
         OrganizationUserRelation organizationUserRelation = organizationUserRelationRepository.findByUserIdAndOrganizationId(
-                userId, file.getFolder().getOrganization().getId()
+                userId, organizationId
         );
 
-        boolean isUserOrganizationEditor = organizationUserRelation.getAccessId() <= OrganizationUtil.ORGANIZATION_EDITOR_ROLE_ID;
-
-        if (!isUserOrganizationEditor || organizationUserRelation == null) {
+        if (organizationUserRelation == null) {
             return false;
         }
 
-        return true;
+        return organizationUserRelation.getAccessId() <= OrganizationUtil.ORGANIZATION_EDITOR_ROLE_ID;
     }
 
     public Page<OrganizationFileInfoDTO> getUserRecentOrganizationDocuments(String userId, String organizationId, int page) {

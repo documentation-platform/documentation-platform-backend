@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FileRepository extends JpaRepository<File, String> {
     @Query("""
-    SELECT new com.org.project.dto.OrganizationFileInfoDTO(f.id, f.name, f.updatedUser.id, f.updatedAt)
+    SELECT new com.org.project.dto.OrganizationFileInfoDTO(f.id, f.name, fd.name, f.updatedUser.name, f.updatedAt)
     FROM File f
     JOIN Folder fd ON f.folder.id = fd.id
     WHERE (f.updatedUser.id = :userId AND fd.organization.id = :organizationId)
@@ -25,7 +25,7 @@ public interface FileRepository extends JpaRepository<File, String> {
                                                                             Pageable pageable);
 
     @Query("""
-    SELECT new com.org.project.dto.UserFileInfoDTO(f.id, f.name, f.updatedAt)
+    SELECT new com.org.project.dto.UserFileInfoDTO(f.id, f.name, fd.name, f.updatedAt)
     FROM File f
     JOIN Folder fd ON f.folder.id = fd.id
     WHERE (f.updatedUser.id = :userId AND fd.user.id = :userId)
