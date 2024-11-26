@@ -1,5 +1,6 @@
 package com.org.project.service;
 
+import com.org.project.dto.FileInfoDTO;
 import com.org.project.model.*;
 import com.org.project.repository.FileContentRelationRepository;
 import com.org.project.repository.FileRepository;
@@ -7,8 +8,13 @@ import com.org.project.repository.OrganizationUserRelationRepository;
 import com.org.project.util.OrganizationUtil;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 @Service
 public class DocumentService {
@@ -74,6 +80,11 @@ public class DocumentService {
         }
 
         return true;
+    }
+
+    public Page<FileInfoDTO> getUserRecentOrganizationDocuments(String userId, String organizationId, int page) {
+        Pageable pageable = PageRequest.of(page, 5);
+        return fileRepository.findTop5FileInfoByUserIdAndOrganizationId(userId, organizationId, pageable);
     }
 
     @Transactional

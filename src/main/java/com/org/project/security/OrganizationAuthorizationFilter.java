@@ -25,11 +25,18 @@ public class OrganizationAuthorizationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String requestURI = request.getRequestURI();
 
-        String pattern = "/organization/{organizationId}/**";
+        String organizationPattern = "/organization/{organizationId}/**";
+        String documentOrganizationPattern = "/document/organization/{organizationId}/**";
         AntPathMatcher pathMatcher = new AntPathMatcher();
 
-        if (pathMatcher.match(pattern, requestURI) && hasValidSuffix(requestURI)) {
-            String organizationId = pathMatcher.extractUriTemplateVariables(pattern, requestURI).get("organizationId");
+        if ((pathMatcher.match(organizationPattern, requestURI) || pathMatcher.match(documentOrganizationPattern, requestURI))
+                && hasValidSuffix(requestURI)) {
+
+            String matchedPattern = pathMatcher.match(organizationPattern, requestURI)
+                    ? organizationPattern
+                    : documentOrganizationPattern;
+
+            String organizationId = pathMatcher.extractUriTemplateVariables(matchedPattern, requestURI).get("organizationId");
 
             if (!handleOrganizationRequest(request, response, organizationId)) {
                 return;
@@ -39,7 +46,7 @@ public class OrganizationAuthorizationFilter extends OncePerRequestFilter {
     }
 
     private boolean hasValidSuffix(String requestURI) {
-        String pattern = "/organization/[^/]+/.+";
+        String pattern = "(/organization/[^/]+/.+)|(/document/organization/[^/]+/.+)";
         return requestURI.matches(pattern);
     }
 

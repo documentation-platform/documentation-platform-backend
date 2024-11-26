@@ -1,5 +1,6 @@
 package com.org.project.controller;
 
+import com.org.project.dto.FileInfoDTO;
 import com.org.project.model.*;
 import com.org.project.repository.*;
 import com.org.project.security.organization.OrganizationAdmin;
@@ -299,20 +300,6 @@ public class OrganizationController {
         Map<String, Object> response = new HashMap<>();
         response.put("document_id", newOrganizationDocument.getId());
         return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/{org_id}/recent-documents")
-    public ResponseEntity<Map<String, Object>> getRecentDocuments(
-            @PathVariable("org_id") String organizationId,
-            @RequestParam("page") Integer page_number
-    ) {
-//        List<File> recentDocuments = documentService.getRecentDocuments(organizationId, page_number);
-//
-//        if (recentDocuments.isEmpty()) {
-//            return new ResponseEntity<>(Map.of("message", "No documents found"), HttpStatus.NOT_FOUND);
-//        }
-
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
 
