@@ -1,10 +1,16 @@
 package com.org.project.controller;
 
+import com.org.project.dto.OrganizationFileInfoDTO;
+import com.org.project.dto.UserFileInfoDTO;
 import com.org.project.model.File;
+import com.org.project.security.organization.OrganizationEditor;
+import com.org.project.security.organization.OrganizationViewer;
+import com.org.project.service.OrganizationService;
 import com.org.project.service.DocumentService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.hibernate.annotations.CurrentTimestamp;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +26,9 @@ public class DocumentController {
 
     @Autowired
     private DocumentService documentService;
+
+    @Autowired
+    private OrganizationService organizationService;
 
     @GetMapping("/{document_id}/view")
     public ResponseEntity<Map<String, Object>> viewDocument(
@@ -112,5 +121,69 @@ public class DocumentController {
         }
 
         return ResponseEntity.ok(Map.of("message", "Document deleted successfully"));
+    }
+
+    @OrganizationEditor
+    @PostMapping("/organization/{org_id}/create")
+    public ResponseEntity<Map<String, Object>> createDocument(
+            @PathVariable("org_id") String organizationId,
+            HttpServletRequest securedRequest
+    ) {
+        String userId = (String) securedRequest.getAttribute("user_id");
+        File newOrganizationDocument = documentService.createOrganizationDocument(userId, organizationId);
+
+        if (newOrganizationDocument == null) {
+            return new ResponseEntity<>(Map.of("error", "Failed to create document"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("document_id", newOrganizationDocument.getId());
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @OrganizationViewer
+    @GetMapping("/organization/{org_id}/recent")
+    public ResponseEntity<Map<String, Object>> getRecentDocuments(
+            @PathVariable("org_id") String organizationId,
+            @RequestParam("page") Integer page_number,
+            HttpServletRequest request
+    ) {
+        String userId = (String) request.getAttribute("user_id");
+
+        Page<OrganizationFileInfoDTO> recentDocuments = documentService.getUserRecentOrganizationDocuments(userId, organizationId, page_number);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("documents", recentDocuments);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/user/recent")
+    public ResponseEntity<Map<String, Object>> getRecentUserDocuments(
+            @RequestParam("page") Integer page_number,
+            HttpServletRequest request
+    ) {
+        String userId = (String) request.getAttribute("user_id");
+
+        Page<UserFileInfoDTO> recentDocuments = documentService.getUserRecentDocuments(userId, page_number);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("documents", recentDocuments);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/user/create")
+    public ResponseEntity<Map<String, Object>> createUserDocument(
+            HttpServletRequest request
+    ) {
+        String userId = (String) request.getAttribute("user_id");
+        File newUserDocument = documentService.createUserDocument(userId);
+
+        if (newUserDocument == null) {
+            return new ResponseEntity<>(Map.of("error", "Failed to create document"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("document_id", newUserDocument.getId());
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }

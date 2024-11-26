@@ -282,38 +282,6 @@ public class OrganizationController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
-    @OrganizationEditor
-    @PostMapping("/{org_id}/create-document")
-    public ResponseEntity<Map<String, Object>> createDocument(
-            @PathVariable("org_id") String organizationId,
-            HttpServletRequest securedRequest
-    ) {
-        String userId = (String) securedRequest.getAttribute("user_id");
-        File newOrganizationDocument = documentService.createOrganizationDocument(userId, organizationId);
-
-        if (newOrganizationDocument == null) {
-            return new ResponseEntity<>(Map.of("error", "Failed to create document"), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("document_id", newOrganizationDocument.getId());
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/{org_id}/recent-documents")
-    public ResponseEntity<Map<String, Object>> getRecentDocuments(
-            @PathVariable("org_id") String organizationId,
-            @RequestParam("page") Integer page_number
-    ) {
-//        List<File> recentDocuments = documentService.getRecentDocuments(organizationId, page_number);
-//
-//        if (recentDocuments.isEmpty()) {
-//            return new ResponseEntity<>(Map.of("message", "No documents found"), HttpStatus.NOT_FOUND);
-//        }
-
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 }
 
 

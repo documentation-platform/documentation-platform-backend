@@ -1,14 +1,20 @@
 package com.org.project.service;
 
+import com.org.project.dto.OrganizationFileInfoDTO;
+import com.org.project.dto.UserFileInfoDTO;
 import com.org.project.model.*;
 import com.org.project.repository.FileContentRelationRepository;
 import com.org.project.repository.FileRepository;
+import com.org.project.repository.FolderRepository;
 import com.org.project.repository.OrganizationUserRelationRepository;
 import com.org.project.util.OrganizationUtil;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class DocumentService {
@@ -21,6 +27,9 @@ public class DocumentService {
 
     @Autowired
     private FileRepository fileRepository;
+
+    @Autowired
+    private FolderRepository folderRepository;
 
     @Autowired
     private FileContentRelationRepository fileContentRelationRepository;
@@ -74,6 +83,16 @@ public class DocumentService {
         }
 
         return true;
+    }
+
+    public Page<OrganizationFileInfoDTO> getUserRecentOrganizationDocuments(String userId, String organizationId, int page) {
+        Pageable pageable = PageRequest.of(page, 5);
+        return fileRepository.findTop5FileInfoByUserIdAndOrganizationId(userId, organizationId, pageable);
+    }
+
+    public Page<UserFileInfoDTO> getUserRecentDocuments(String userId, int page) {
+        Pageable pageable = PageRequest.of(page, 5);
+        return fileRepository.findTop5FileInfoByUserId(userId, pageable);
     }
 
     @Transactional
@@ -141,5 +160,37 @@ public class DocumentService {
         fileContentRelation.setTextContent("");
         fileContentRelationRepository.save(fileContentRelation);
         return file;
+    }
+
+    @Transactional
+    public File createUserDocument(String userId) {
+        Folder folder = getRootUserFolder(userId);
+        User user = entityManager.getReference(User.class, userId);
+        File file = new File();
+        file.setFolder(folder);
+        file.setCreationUser(user);
+        file.setUpdatedUser(user);
+        File newFile = fileRepository.save(file);
+
+        FileContentRelation fileContentRelation = new FileContentRelation();
+        fileContentRelation.setFileId(newFile.getId());
+        fileContentRelation.setFile(newFile);
+        fileContentRelation.setTextContent("");
+        fileContentRelationRepository.save(fileContentRelation);
+        return file;
+    }
+
+    private Folder getRootUserFolder(String userId) {
+        Folder rootFolder = folderRepository.findByUserIdAndParentFolderIsNull(userId);
+
+        if (rootFolder == null) {
+            User user = entityManager.getReference(User.class, userId);
+            rootFolder = new Folder();
+            rootFolder.setName("root");
+            rootFolder.setUser(user);
+            folderRepository.save(rootFolder);
+        }
+
+        return rootFolder;
     }
 }
