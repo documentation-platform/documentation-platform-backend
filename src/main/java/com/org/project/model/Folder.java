@@ -27,6 +27,10 @@ public class Folder{
     @JoinColumn(name = "organization_id", referencedColumnName = "id")
     private Organization organization;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
+
     @Column(name = "created_at")
     @CreationTimestamp
     private Date createdAt;
@@ -63,6 +67,14 @@ public class Folder{
 
     public void setOrganization(Organization organization) {
         this.organization = organization;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Date getCreatedAt() {

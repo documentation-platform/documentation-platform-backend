@@ -2,13 +2,13 @@ package com.org.project.dto;
 
 import java.util.Date;
 
-public class FileInfoDTO {
+public class OrganizationFileInfoDTO {
     private String fileId;
     private String name;
     private String updatedUserId;
     private Date updatedAt;
 
-    public FileInfoDTO(String fileId, String name, String updatedUserId, Date updatedAt) {
+    public OrganizationFileInfoDTO(String fileId, String name, String updatedUserId, Date updatedAt) {
         this.fileId = fileId;
         this.name = name;
         this.updatedUserId = updatedUserId;

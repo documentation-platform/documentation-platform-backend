@@ -1,9 +1,11 @@
 package com.org.project.service;
 
 import com.org.project.exception.AccountExistsException;
+import com.org.project.model.Folder;
 import com.org.project.model.OrganizationUserRelation;
 import com.org.project.model.User;
 import com.org.project.dto.RegisterRequestDTO;
+import com.org.project.repository.FolderRepository;
 import com.org.project.repository.OrganizationUserRelationRepository;
 import com.org.project.repository.UserRepository;
 
@@ -19,6 +21,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private FolderRepository folderRepository;
 
     @Autowired
     private OrganizationUserRelationRepository organizationUserRelationRepository;
@@ -40,8 +45,14 @@ public class UserService {
             newUser.setPasswordHash(userRequest.getPassword());
         }
 
+        Folder rootFolder = new Folder();
+        rootFolder.setName("root");
+        rootFolder.setUser(newUser);
+
         try {
-            return userRepository.save(newUser);
+            User savedUser = userRepository.save(newUser);
+            folderRepository.save(rootFolder);
+            return savedUser;
         } catch (Exception e) {
             throw e;
         }
