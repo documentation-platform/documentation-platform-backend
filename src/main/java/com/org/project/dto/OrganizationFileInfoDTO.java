@@ -5,12 +5,14 @@ import java.util.Date;
 public class OrganizationFileInfoDTO {
     private String fileId;
     private String name;
+    private String folderName;
     private String updatedUserId;
     private Date updatedAt;
 
-    public OrganizationFileInfoDTO(String fileId, String name, String updatedUserId, Date updatedAt) {
+    public OrganizationFileInfoDTO(String fileId, String name, String folderName, String updatedUserId, Date updatedAt) {
         this.fileId = fileId;
         this.name = name;
+        this.folderName = folderName;
         this.updatedUserId = updatedUserId;
         this.updatedAt = updatedAt;
     }
@@ -29,6 +31,14 @@ public class OrganizationFileInfoDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getFolderName() {
+        return folderName;
+    }
+
+    public void setFolderName(String folderName) {
+        this.folderName = folderName;
     }
 
     public String getUpdatedUserId() {
