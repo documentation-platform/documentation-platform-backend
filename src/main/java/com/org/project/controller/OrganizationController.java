@@ -4,8 +4,10 @@ import com.org.project.model.*;
 import com.org.project.repository.*;
 import com.org.project.security.organization.OrganizationAdmin;
 import com.org.project.security.organization.OrganizationEditor;
+import com.org.project.security.organization.OrganizationViewer;
 import com.org.project.service.DocumentService;
 import com.org.project.service.OrganizationService;
+import com.org.project.util.OrganizationUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,9 +61,8 @@ public class OrganizationController {
         // Fetch all OrganizationUserRelation records for the given userId
         List<OrganizationUserRelation> userRelations = OrganizationUserRelationRepository.findByUserId(userId);
 
-        // If no relations are found, return a message indicating no organizations
         if (userRelations.isEmpty()) {
-            return new ResponseEntity<>(Map.of("message", "No organizations found for this user"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(Map.of("organizations", Collections.emptyList()), HttpStatus.OK);
         }
 
         // Extract the organizationIds from the relations
@@ -83,50 +84,40 @@ public class OrganizationController {
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("User not found in organization"));
 
-            // Fetch the access name for this relation
-            Access access = AccessRepository.findById(userRelation.getAccessId())
-                    .orElseThrow(() -> new RuntimeException("Access level not found"));
-
             // Create a map for this organization's details
             Map<String, Object> orgDetails = new HashMap<>();
             orgDetails.put("id", organization.getId());
             orgDetails.put("name", organization.getName());
-            orgDetails.put("access", access.getName());
-            orgDetails.put("accessId", access.getId());
+            orgDetails.put("access", OrganizationUtil.getAccessLevel(userRelation.getAccessId()));
+            orgDetails.put("accessId", userRelation.getAccessId());
             orgDetails.put("createdAt", organization.getCreatedAt());
             orgDetails.put("updatedAt", organization.getUpdatedAt());
 
-            // If the user is an admin (accessId == 1), add the members list
-            if (access.getId() == 1) {
-                // Fetch all members of the organization
-                List<OrganizationUserRelation> orgRelations = OrganizationUserRelationRepository.findByOrganizationId(organization.getId());
-
-                // Build the members list
-                List<Map<String, Object>> members = new ArrayList<>();
-                for (OrganizationUserRelation orgRelation : orgRelations) {
-                    String memberId = orgRelation.getUserId();
-                    Access memberAccess = AccessRepository.findById(orgRelation.getAccessId())
-                            .orElseThrow(() -> new RuntimeException("Access level not found for member"));
-
-                    // Fetch the username based on the userId
-                    User member = UserRepository.findById(memberId);
-
-                    Map<String, Object> memberDetails = new HashMap<>();
-                    memberDetails.put("userId", memberId);
-                    memberDetails.put("userName", member.getName());
-                    memberDetails.put("access", memberAccess.getName());
-
-                    members.add(memberDetails);
-                }
-
-                orgDetails.put("members", members);  // Add the members list
-            }
-
-            // Add the organization details to the response
             organizationDetails.add(orgDetails);
         }
 
         response.put("organizations", organizationDetails);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @OrganizationViewer
+    @GetMapping("/{org_id}/info")
+    public ResponseEntity<Map<String, Object>> getOrganizationInfo(
+            @PathVariable("org_id") String organizationId,
+            HttpServletRequest request
+    ) {
+        String userId = (String) request.getAttribute("user_id");
+
+        Organization organization = organizationRepository.findById(organizationId).orElse(null);
+        OrganizationUserRelation relation = OrganizationUserRelationRepository.findByUserIdAndOrganizationId(userId, organizationId);
+
+        if (organization == null || relation == null) {
+            return new ResponseEntity<>(Map.of("error", "Organization not found"), HttpStatus.NOT_FOUND);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("name", organization.getName());
+        response.put("access_name", OrganizationUtil.getAccessLevel(relation.getAccessId()));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
