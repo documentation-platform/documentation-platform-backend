@@ -162,7 +162,7 @@ public class DocumentService {
 
     @Transactional
     public File createOrganizationDocument(String userId, String organizationId) {
-        Folder folder = organizationService.getOrganizationRootFolder(organizationId);
+        Folder folder = folderService.getRootOrganizationFolder(organizationId);
         User user = entityManager.getReference(User.class, userId);
         File file = new File();
         file.setFolder(folder);
