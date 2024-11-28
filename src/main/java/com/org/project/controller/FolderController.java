@@ -34,34 +34,4 @@ public class FolderController {
             return ResponseEntity.status(500).body(Map.of("error", "An error occurred while creating the folder"));
         }
     }
-
-    @OrganizationEditor
-    @PostMapping("/organization/{org_id}/create")
-    public ResponseEntity<Map<String, Object>> createFolder(
-            @PathVariable("org_id") String organizationId,
-            HttpServletRequest securedRequest
-    ) {
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
-    @PatchMapping("/{folder_id}/name")
-    public ResponseEntity<Map<String, Object>> updateFolderName(
-            @PathVariable("folder_id") String folderId,
-            @RequestBody Map<String, Object> requestBody,
-            HttpServletRequest request
-    ){
-        String userId = (String) request.getAttribute("user_id");
-
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
-    @DeleteMapping("/{folder_id}/delete")
-    public ResponseEntity<Map<String, Object>> deleteDocument(
-            @PathVariable("document_id") String documentId,
-            HttpServletRequest request
-    ){
-        String userId = (String) request.getAttribute("user_id");
-
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 }
