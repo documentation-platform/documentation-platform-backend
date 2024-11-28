@@ -8,6 +8,7 @@ import com.org.project.repository.FileRepository;
 import com.org.project.repository.FolderRepository;
 import com.org.project.repository.OrganizationUserRelationRepository;
 import com.org.project.util.OrganizationUtil;
+import com.org.project.service.FolderService;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,9 @@ public class DocumentService {
 
     @Autowired
     private OrganizationService organizationService;
+
+    @Autowired
+    private FolderService folderService;
 
     @Autowired
     private FileRepository fileRepository;
@@ -78,14 +82,14 @@ public class DocumentService {
             return false;
         }
 
-        if (parentFolder.getOrganization() != null){
+        if (parentFolder.getOrganization() != null) {
             return canUserEditOrganizationDocument(userId, parentFolder.getOrganization().getId());
         }
 
         return parentFolder.getUser().getId().equals(userId);
     }
 
-    public boolean canUserEditOrganizationDocument(String userId, String organizationId){
+    public boolean canUserEditOrganizationDocument(String userId, String organizationId) {
         OrganizationUserRelation organizationUserRelation = organizationUserRelationRepository.findByUserIdAndOrganizationId(
                 userId, organizationId
         );
@@ -176,7 +180,7 @@ public class DocumentService {
 
     @Transactional
     public File createUserDocument(String userId) {
-        Folder folder = getRootUserFolder(userId);
+        Folder folder = folderService.getRootUserFolder(userId);
         User user = entityManager.getReference(User.class, userId);
         File file = new File();
         file.setFolder(folder);
@@ -190,19 +194,5 @@ public class DocumentService {
         fileContentRelation.setTextContent("");
         fileContentRelationRepository.save(fileContentRelation);
         return file;
-    }
-
-    private Folder getRootUserFolder(String userId) {
-        Folder rootFolder = folderRepository.findByUserIdAndParentFolderIsNull(userId);
-
-        if (rootFolder == null) {
-            User user = entityManager.getReference(User.class, userId);
-            rootFolder = new Folder();
-            rootFolder.setName("root");
-            rootFolder.setUser(user);
-            folderRepository.save(rootFolder);
-        }
-
-        return rootFolder;
     }
 }
