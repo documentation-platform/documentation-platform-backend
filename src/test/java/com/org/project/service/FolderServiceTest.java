@@ -77,4 +77,29 @@ class FolderServiceTest {
         assertEquals(testUser, createdFolder.getUser());
         verify(folderRepository, times(1)).save(createdFolder);
     }
+
+    @Test
+    void getRootUserFolder_WhenRootFolderExists_ShouldReturnExistingFolder() {
+        when(folderRepository.findByUserIdAndParentFolderIsNull("test_user_id")).thenReturn(rootFolder);
+
+        Folder result = folderService.getRootUserFolder("test_user_id");
+
+        assertNotNull(result);
+        assertEquals(rootFolder, result);
+        verify(folderRepository, never()).save(any(Folder.class));
+    }
+
+    @Test
+    void getRootUserFolder_WhenRootFolderDoesNotExist_ShouldCreateAndSaveFolder() {
+        when(folderRepository.findByUserIdAndParentFolderIsNull("test_user_id")).thenReturn(null);
+        when(entityManager.getReference(User.class, "test_user_id")).thenReturn(testUser);
+        when(folderRepository.save(any(Folder.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Folder result = folderService.getRootUserFolder("test_user_id");
+
+        assertNotNull(result);
+        assertEquals("root", result.getName());
+        assertEquals(testUser, result.getUser());
+        verify(folderRepository, times(1)).save(result);
+    }
 }
