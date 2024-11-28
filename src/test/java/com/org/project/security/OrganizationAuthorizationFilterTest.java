@@ -28,6 +28,8 @@ class OrganizationAuthorizationFilterTest {
     private MockHttpServletResponse response;
     private MockFilterChain filterChain;
 
+    private String organizationId = "11111111-1111-1111-1111-111111111111";
+
     @BeforeEach
     void setUp() {
         request = new MockHttpServletRequest();
@@ -39,7 +41,6 @@ class OrganizationAuthorizationFilterTest {
 
     @Test
     void whenValidRequestAndUserHasAccess_thenSucceed() throws Exception {
-        String organizationId = "org123";
         request.setRequestURI("/organization/" + organizationId + "/users");
 
         OrganizationUserRelation relation = new OrganizationUserRelation();
@@ -56,7 +57,6 @@ class OrganizationAuthorizationFilterTest {
 
     @Test
     void whenUserDoesNotHaveAccess_thenReturn403() throws Exception {
-        String organizationId = "org123";
         request.setRequestURI("/organization/" + organizationId + "/users");
 
         when(organizationService.getUserOrganizationRelation("test-user-id", organizationId))
@@ -79,7 +79,7 @@ class OrganizationAuthorizationFilterTest {
 
     @Test
     void whenInvalidSuffix_thenSkipFilter() throws Exception {
-        request.setRequestURI("/organization/org123");
+        request.setRequestURI("/organization/create");
 
         filter.doFilterInternal(request, response, filterChain);
 
@@ -89,8 +89,23 @@ class OrganizationAuthorizationFilterTest {
 
     @Test
     void whenValidPathWithMultipleSegments_thenSucceed() throws Exception {
-        String organizationId = "org123";
         request.setRequestURI("/organization/" + organizationId + "/users/settings/profile");
+
+        OrganizationUserRelation relation = new OrganizationUserRelation();
+        relation.setAccessId(2);
+
+        when(organizationService.getUserOrganizationRelation("test-user-id", organizationId))
+                .thenReturn(relation);
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertEquals(2, request.getAttribute("user_organization_access_id"));
+        assertEquals(200, response.getStatus());
+    }
+
+    @Test
+    void whenValidPathWithMultipleSegments2_thenSucceed() throws Exception {
+        request.setRequestURI("test/testing/organization/" + organizationId + "/users/settings/profile");
 
         OrganizationUserRelation relation = new OrganizationUserRelation();
         relation.setAccessId(2);
