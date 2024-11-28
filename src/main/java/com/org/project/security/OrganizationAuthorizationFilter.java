@@ -10,9 +10,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.util.AntPathMatcher;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class OrganizationAuthorizationFilter extends OncePerRequestFilter {
@@ -20,34 +21,25 @@ public class OrganizationAuthorizationFilter extends OncePerRequestFilter {
     @Autowired
     private OrganizationService organizationService;
 
+    private static final Pattern ORGANIZATION_URL_PATTERN = Pattern.compile("^(.*/)?organization/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(/.*)?$");
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         String requestURI = request.getRequestURI();
 
-        String organizationPattern = "/organization/{organizationId}/**";
-        String documentOrganizationPattern = "/document/organization/{organizationId}/**";
-        AntPathMatcher pathMatcher = new AntPathMatcher();
+        Matcher matcher = ORGANIZATION_URL_PATTERN.matcher(requestURI);
 
-        if ((pathMatcher.match(organizationPattern, requestURI) || pathMatcher.match(documentOrganizationPattern, requestURI))
-                && hasValidSuffix(requestURI)) {
-
-            String matchedPattern = pathMatcher.match(organizationPattern, requestURI)
-                    ? organizationPattern
-                    : documentOrganizationPattern;
-
-            String organizationId = pathMatcher.extractUriTemplateVariables(matchedPattern, requestURI).get("organizationId");
+        if (matcher.matches()) {
+            String organizationId = matcher.group(2);
 
             if (!handleOrganizationRequest(request, response, organizationId)) {
                 return;
             }
         }
-        filterChain.doFilter(request, response);
-    }
 
-    private boolean hasValidSuffix(String requestURI) {
-        String pattern = "(/organization/[^/]+/.+)|(/document/organization/[^/]+/.+)";
-        return requestURI.matches(pattern);
+        filterChain.doFilter(request, response);
     }
 
     private boolean handleOrganizationRequest(HttpServletRequest request, HttpServletResponse response, String organizationId) throws IOException {
