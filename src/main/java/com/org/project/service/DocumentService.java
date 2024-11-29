@@ -46,19 +46,25 @@ public class DocumentService {
     public boolean canUserViewDocument(String userId, String documentId) {
         File file = fileRepository.findById(documentId).orElse(null);
 
-        if (file == null || file.getFolder().getOrganization() == null) {
+        if (file == null) {
             return false;
         }
 
+        Folder parentFolder = file.getFolder();
+
+        if (parentFolder != null && parentFolder.getOrganization() != null) {
+            return canUserViewOrganizationDocument(userId, parentFolder.getOrganization().getId());
+        }
+
+        return parentFolder.getUser().getId().equals(userId);
+    }
+
+    public boolean canUserViewOrganizationDocument(String userId, String organizationId) {
         OrganizationUserRelation organizationUserRelation = organizationUserRelationRepository.findByUserIdAndOrganizationId(
-                userId, file.getFolder().getOrganization().getId()
+                userId, organizationId
         );
 
-        if (organizationUserRelation == null) {
-            return false;
-        }
-
-        return true;
+        return organizationUserRelation != null;
     }
 
     public String getDocumentContent(String documentId) {
