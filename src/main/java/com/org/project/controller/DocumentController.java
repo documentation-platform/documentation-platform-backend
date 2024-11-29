@@ -127,18 +127,21 @@ public class DocumentController {
     @PostMapping("/organization/{org_id}/create")
     public ResponseEntity<Map<String, Object>> createDocument(
             @PathVariable("org_id") String organizationId,
+            @RequestParam(value = "name", required = false) String documentName,
+            @RequestParam(value = "parent_folder_id", required = false) String parentFolderId,
             HttpServletRequest securedRequest
     ) {
         String userId = (String) securedRequest.getAttribute("user_id");
-        File newOrganizationDocument = documentService.createOrganizationDocument(userId, organizationId);
 
-        if (newOrganizationDocument == null) {
-            return new ResponseEntity<>(Map.of("error", "Failed to create document"), HttpStatus.INTERNAL_SERVER_ERROR);
+        try {
+            File newOrganizationDocument = documentService.createOrganizationDocument(userId, organizationId, documentName, parentFolderId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("document_id", newOrganizationDocument.getId());
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
         }
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("document_id", newOrganizationDocument.getId());
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "An error occurred while creating the document"));
+        }
     }
 
     @OrganizationViewer
@@ -173,17 +176,19 @@ public class DocumentController {
 
     @PostMapping("/user/create")
     public ResponseEntity<Map<String, Object>> createUserDocument(
-            HttpServletRequest request
+            HttpServletRequest request,
+            @RequestParam(value = "name", required = false) String documentName,
+            @RequestParam(value = "parent_folder_id", required = false) String parentFolderId
     ) {
         String userId = (String) request.getAttribute("user_id");
-        File newUserDocument = documentService.createUserDocument(userId);
 
-        if (newUserDocument == null) {
-            return new ResponseEntity<>(Map.of("error", "Failed to create document"), HttpStatus.INTERNAL_SERVER_ERROR);
+        try {
+            File newUserDocument = documentService.createUserDocument(userId, documentName, parentFolderId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("document_id", newUserDocument.getId());
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "An error occurred while creating the document"));
         }
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("document_id", newUserDocument.getId());
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }
