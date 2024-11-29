@@ -4,6 +4,7 @@ import com.org.project.exception.ParentFolderPermissionException;
 import com.org.project.model.Folder;
 import com.org.project.model.Organization;
 import com.org.project.model.User;
+import com.org.project.repository.FileRepository;
 import com.org.project.repository.FolderRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +27,9 @@ class FolderServiceTest {
 
     @Mock
     private FolderRepository folderRepository;
+
+    @Mock
+    private FileRepository fileRepository;
 
     @InjectMocks
     private FolderService folderService;

@@ -9,10 +9,12 @@ import com.org.project.service.FolderService;
 import com.org.project.test_configs.BaseControllerTest;
 import com.org.project.test_configs.ControllerTest;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -28,6 +30,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class FolderControllerTest extends BaseControllerTest {
     @Autowired
     private MockMvc mockMvc;
+
+    @Mock
+    private EntityManager entityManager;
 
     @Autowired
     private ObjectMapper objectMapper;
