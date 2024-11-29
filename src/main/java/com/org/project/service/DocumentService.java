@@ -2,6 +2,7 @@ package com.org.project.service;
 
 import com.org.project.dto.OrganizationFileInfoDTO;
 import com.org.project.dto.UserFileInfoDTO;
+import com.org.project.exception.ParentFolderPermissionException;
 import com.org.project.model.*;
 import com.org.project.repository.FileContentRelationRepository;
 import com.org.project.repository.FileRepository;
@@ -9,6 +10,7 @@ import com.org.project.repository.FolderRepository;
 import com.org.project.repository.OrganizationUserRelationRepository;
 import com.org.project.util.OrganizationUtil;
 import com.org.project.service.FolderService;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -161,38 +163,66 @@ public class DocumentService {
     }
 
     @Transactional
-    public File createOrganizationDocument(String userId, String organizationId) {
-        Folder folder = folderService.getRootOrganizationFolder(organizationId);
+    public File createOrganizationDocument(String userId, String organizationId, @Nullable String documentName, @Nullable String parentFolderId) {
+        if (parentFolderId != null && !folderService.canOrganizationAccessFolder(organizationId, parentFolderId)) {
+            throw new ParentFolderPermissionException();
+        }
+
+        Folder parentDocumentFolder = (parentFolderId != null)
+                ? entityManager.getReference(Folder.class, parentFolderId)
+                : folderService.getRootOrganizationFolder(organizationId);
+
         User user = entityManager.getReference(User.class, userId);
+
         File file = new File();
-        file.setFolder(folder);
+        if (documentName != null && !documentName.isEmpty()) {
+            file.setName(documentName);
+        }
+        file.setFolder(parentDocumentFolder);
         file.setCreationUser(user);
         file.setUpdatedUser(user);
+
         File newFile = fileRepository.save(file);
 
         FileContentRelation fileContentRelation = new FileContentRelation();
         fileContentRelation.setFileId(newFile.getId());
         fileContentRelation.setFile(newFile);
         fileContentRelation.setTextContent("");
+
         fileContentRelationRepository.save(fileContentRelation);
-        return file;
+
+        return newFile;
     }
 
     @Transactional
-    public File createUserDocument(String userId) {
-        Folder folder = folderService.getRootUserFolder(userId);
+    public File createUserDocument(String userId, @Nullable String documentName, @Nullable String parentFolderId) {
+        if (parentFolderId != null && !folderService.canUserAccessFolder(userId, parentFolderId)) {
+            throw new ParentFolderPermissionException();
+        }
+
+        Folder parentDocumentFolder = (parentFolderId != null)
+                ? entityManager.getReference(Folder.class, parentFolderId)
+                : folderService.getRootUserFolder(userId);
+
         User user = entityManager.getReference(User.class, userId);
+
         File file = new File();
-        file.setFolder(folder);
+        if (documentName != null && !documentName.isEmpty()) {
+            file.setName(documentName);
+        }
+        file.setFolder(parentDocumentFolder);
         file.setCreationUser(user);
         file.setUpdatedUser(user);
+
         File newFile = fileRepository.save(file);
 
         FileContentRelation fileContentRelation = new FileContentRelation();
         fileContentRelation.setFileId(newFile.getId());
         fileContentRelation.setFile(newFile);
         fileContentRelation.setTextContent("");
+
         fileContentRelationRepository.save(fileContentRelation);
-        return file;
+
+        return newFile;
     }
 }
