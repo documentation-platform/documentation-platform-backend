@@ -67,7 +67,7 @@ public class FolderController {
             response.put("message", "Folder moved successfully");
             response.put("folder_id", updatedFolder.getId());
             response.put("parent_folder_id", updatedFolder.getParentFolder().getId());
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
         catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "An error occurred while moving the folder"));
