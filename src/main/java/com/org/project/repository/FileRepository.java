@@ -2,6 +2,7 @@ package com.org.project.repository;
 
 import com.org.project.dto.OrganizationFileInfoDTO;
 import com.org.project.dto.UserFileInfoDTO;
+import com.org.project.dto.structure.FolderFileInfoDTO;
 import com.org.project.model.File;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 
 @Repository
 public interface FileRepository extends JpaRepository<File, String> {
@@ -33,4 +35,8 @@ public interface FileRepository extends JpaRepository<File, String> {
     """)
     Page<UserFileInfoDTO> findTop5FileInfoByUserId(@Param("userId") String userId,
                                                    Pageable pageable);
+
+    @Query("SELECT new com.org.project.dto.structure.FolderFileInfoDTO(f.id, f.name, f.updatedAt) " +
+            "FROM File f WHERE f.folder.id = :folderId")
+    List<FolderFileInfoDTO> findFilesByFolderId(@Param("folderId") String folderId);
 }

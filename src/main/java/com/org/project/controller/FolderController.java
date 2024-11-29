@@ -1,7 +1,9 @@
 package com.org.project.controller;
 
+import com.org.project.dto.structure.FolderStructureDTO;
 import com.org.project.model.Folder;
 import com.org.project.security.organization.OrganizationEditor;
+import com.org.project.security.organization.OrganizationViewer;
 import com.org.project.service.FolderService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +94,26 @@ public class FolderController {
         }
         catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "An error occurred while moving the folder"));
+        }
+    }
+
+    @OrganizationViewer
+    @GetMapping("/root/organization/{organization_id}/structure")
+    public ResponseEntity<Map<String, Object>> getOrganizationRootFolderStructure(
+            @PathVariable("organization_id") String organizationId,
+            HttpServletRequest request
+    ) {
+        try {
+            Folder rootFolder = folderService.getRootOrganizationFolder(organizationId);
+            FolderStructureDTO folderStructure = folderService.getFolderStructure(rootFolder);
+            Map<String, Object> response = new HashMap<>();
+            response.put("structure_folder_id", folderStructure.getStructureFolderId());
+            response.put("folders", folderStructure.getFolders());
+            response.put("files", folderStructure.getFiles());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "An error occurred while fetching the folder structure"));
         }
     }
 }
