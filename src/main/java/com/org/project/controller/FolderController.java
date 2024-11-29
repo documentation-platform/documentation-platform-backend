@@ -73,4 +73,25 @@ public class FolderController {
             return ResponseEntity.status(500).body(Map.of("error", "An error occurred while moving the folder"));
         }
     }
+
+    @OrganizationEditor
+    @PatchMapping("/{folder_id}/organization/{organization_id}/move")
+    public ResponseEntity<Map<String, Object>> moveOrganizationFolder(
+            @PathVariable("folder_id") String folderId,
+            @PathVariable("organization_id") String organizationId,
+            @RequestParam("parent_folder_id") String parentFolderId,
+            HttpServletRequest request
+    ) {
+        try {
+            Folder updatedFolder = folderService.moveOrganizationFolder(organizationId, folderId, parentFolderId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Folder moved successfully");
+            response.put("folder_id", updatedFolder.getId());
+            response.put("parent_folder_id", updatedFolder.getParentFolder().getId());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "An error occurred while moving the folder"));
+        }
+    }
 }

@@ -194,5 +194,41 @@ public class FolderControllerTest extends BaseControllerTest {
                         .andExpect(status().isBadRequest());
             }
         }
+
+        @Nested
+        class MoveOrganizationFolder {
+            private Folder newParentOrganizationFolder;
+
+            @BeforeEach
+            void setUp() {
+                newParentOrganizationFolder = Mockito.mock(Folder.class);
+                when(newParentOrganizationFolder.getId()).thenReturn("new_parent_folder_id");
+                when(newParentOrganizationFolder.getOrganization()).thenReturn(testOrganizaton);
+                when(newParentOrganizationFolder.getParentFolder()).thenReturn(parentOrganizationFolder);
+            }
+
+            @Test
+            void shouldReturn200AndFolderIdWhenFolderIsMoved() throws Exception {
+                when(folderService.moveOrganizationFolder(any(), any(), any())).thenReturn(newParentOrganizationFolder);
+
+                mockMvc.perform(patch("/folder/{folder_id}/organization/{organization_id}/move", newParentOrganizationFolder.getId(), testOrganizaton.getId())
+                                .param("parent_folder_id", parentOrganizationFolder.getId())
+                        )
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.folder_id").value(newParentOrganizationFolder.getId()))
+                        .andExpect(jsonPath("$.parent_folder_id").value(parentOrganizationFolder.getId()));
+            }
+
+            @Test
+            void shouldReturn500AndErrorMessageWhenFolderMoveFails() throws Exception {
+                when(folderService.moveOrganizationFolder(any(), any(), any())).thenThrow(new RuntimeException("Failed to move folder"));
+
+                mockMvc.perform(patch("/folder/{folder_id}/organization/{organization_id}/move", newParentOrganizationFolder.getId(), testOrganizaton.getId())
+                                .param("parent_folder_id", parentOrganizationFolder.getId())
+                        )
+                        .andExpect(status().isInternalServerError())
+                        .andExpect(jsonPath("$.error").value("An error occurred while moving the folder"));
+            }
+        }
     }
 }
