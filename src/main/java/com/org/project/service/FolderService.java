@@ -55,6 +55,30 @@ public class FolderService {
         return folderRepository.save(newFolder);
     }
 
+    public Folder moveUserFolder(String userId, String folderId, String parentFolderId) {
+        if (!canUserAccessFolder(userId, folderId) || !canUserAccessFolder(userId, parentFolderId)) {
+            throw new ParentFolderPermissionException();
+        }
+
+        Folder folder = entityManager.getReference(Folder.class, folderId);
+        Folder parentFolder = entityManager.getReference(Folder.class, parentFolderId);
+        folder.setParentFolder(parentFolder);
+
+        return folderRepository.save(folder);
+    }
+
+    public Folder moveOrganizationFolder(String organizationId, String folderId, String parentFolderId) {
+        if (!canOrganizationAccessFolder(organizationId, folderId) || !canOrganizationAccessFolder(organizationId, parentFolderId)) {
+            throw new ParentFolderPermissionException();
+        }
+
+        Folder folder = entityManager.getReference(Folder.class, folderId);
+        Folder parentFolder = entityManager.getReference(Folder.class, parentFolderId);
+        folder.setParentFolder(parentFolder);
+
+        return folderRepository.save(folder);
+    }
+
     public Folder getRootUserFolder(String userId) {
         Folder rootFolder = folderRepository.findByUserIdAndParentFolderIsNull(userId);
 

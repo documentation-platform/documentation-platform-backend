@@ -9,7 +9,6 @@ import com.org.project.service.FolderService;
 import com.org.project.test_configs.BaseControllerTest;
 import com.org.project.test_configs.ControllerTest;
 
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ControllerTest(FolderController.class)
@@ -36,7 +36,6 @@ public class FolderControllerTest extends BaseControllerTest {
     private FolderService folderService;
 
     private User testUser;
-    private Folder noParentUserFolder;
 
     @BeforeEach
     void setUp() {
@@ -46,25 +45,40 @@ public class FolderControllerTest extends BaseControllerTest {
         when(testUser.getProvider()).thenReturn(User.Provider.LOCAL);
         when(testUser.getAuthVersion()).thenReturn(1);
 
-        noParentUserFolder = Mockito.mock(Folder.class);
-        when(noParentUserFolder.getName()).thenReturn("test_folder");
-        when(noParentUserFolder.getId()).thenReturn("test_folder_id");
     }
 
     @Nested
     class UserTests {
+        private Folder rootUserFolder;
+        private Folder parentUserFolder;
+
+        @BeforeEach
+        void setUp() {
+            rootUserFolder = Mockito.mock(Folder.class);
+            when(rootUserFolder.getName()).thenReturn("test_folder");
+            when(rootUserFolder.getId()).thenReturn("test_folder_id");
+            when(rootUserFolder.getParentFolder()).thenReturn(null);
+            when(rootUserFolder.getUser()).thenReturn(testUser);
+
+            parentUserFolder = Mockito.mock(Folder.class);
+            when(parentUserFolder.getName()).thenReturn("parent_folder");
+            when(parentUserFolder.getId()).thenReturn("parent_folder_id");
+            when(parentUserFolder.getParentFolder()).thenReturn(rootUserFolder);
+            when(parentUserFolder.getUser()).thenReturn(testUser);
+        }
+
         @Nested
         class CreateUserFolder {
             @Test
             void shouldReturn201AndFolderIdWhenFolderIsCreated() throws Exception {
-                when(folderService.createUserFolder(any(), any(), any())).thenReturn(noParentUserFolder);
+                when(folderService.createUserFolder(any(), any(), any())).thenReturn(rootUserFolder);
 
                 mockMvc.perform(post("/folder/user/create")
                                 .param("name", "test_folder")
                                 .requestAttr("user_id", testUser.getId())
                         )
                         .andExpect(status().isCreated())
-                        .andExpect(jsonPath("$.folder_id").value(noParentUserFolder.getId()));
+                        .andExpect(jsonPath("$.folder_id").value(rootUserFolder.getId()));
             }
 
             @Test
@@ -85,6 +99,44 @@ public class FolderControllerTest extends BaseControllerTest {
                                 .requestAttr("user_id", testUser.getId())
                         )
                         .andExpect(status().isBadRequest());
+            }
+        }
+
+        @Nested
+        class MoveUserFolder {
+            private Folder newParentUserFolder;
+
+            @BeforeEach
+            void setUp() {
+                newParentUserFolder = Mockito.mock(Folder.class);
+                when(newParentUserFolder.getId()).thenReturn("new_parent_folder_id");
+                when(newParentUserFolder.getUser()).thenReturn(testUser);
+                when(newParentUserFolder.getParentFolder()).thenReturn(parentUserFolder);
+            }
+
+            @Test
+            void shouldReturn200AndFolderIdWhenFolderIsMoved() throws Exception {
+                when(folderService.moveUserFolder(any(), any(), any())).thenReturn(newParentUserFolder);
+
+                mockMvc.perform(patch("/folder/{folder_id}/user/move", newParentUserFolder.getId())
+                                .param("parent_folder_id", parentUserFolder.getId())
+                                .requestAttr("user_id", testUser.getId())
+                        )
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.folder_id").value(newParentUserFolder.getId()))
+                        .andExpect(jsonPath("$.parent_folder_id").value(parentUserFolder.getId()));
+            }
+
+            @Test
+            void shouldReturn500AndErrorMessageWhenFolderMoveFails() throws Exception {
+                when(folderService.moveUserFolder(any(), any(), any())).thenThrow(new RuntimeException("Failed to move folder"));
+
+                mockMvc.perform(patch("/folder/{folder_id}/user/move", newParentUserFolder.getId())
+                                .param("parent_folder_id", parentUserFolder.getId())
+                                .requestAttr("user_id", testUser.getId())
+                        )
+                        .andExpect(status().isInternalServerError())
+                        .andExpect(jsonPath("$.error").value("An error occurred while moving the folder"));
             }
         }
     }
@@ -140,6 +192,42 @@ public class FolderControllerTest extends BaseControllerTest {
             void shouldReturn400WhenFolderNameIsMissing() throws Exception {
                 mockMvc.perform(post("/folder/organization/{organization_id}/create", testOrganizaton.getId()))
                         .andExpect(status().isBadRequest());
+            }
+        }
+
+        @Nested
+        class MoveOrganizationFolder {
+            private Folder newParentOrganizationFolder;
+
+            @BeforeEach
+            void setUp() {
+                newParentOrganizationFolder = Mockito.mock(Folder.class);
+                when(newParentOrganizationFolder.getId()).thenReturn("new_parent_folder_id");
+                when(newParentOrganizationFolder.getOrganization()).thenReturn(testOrganizaton);
+                when(newParentOrganizationFolder.getParentFolder()).thenReturn(parentOrganizationFolder);
+            }
+
+            @Test
+            void shouldReturn200AndFolderIdWhenFolderIsMoved() throws Exception {
+                when(folderService.moveOrganizationFolder(any(), any(), any())).thenReturn(newParentOrganizationFolder);
+
+                mockMvc.perform(patch("/folder/{folder_id}/organization/{organization_id}/move", newParentOrganizationFolder.getId(), testOrganizaton.getId())
+                                .param("parent_folder_id", parentOrganizationFolder.getId())
+                        )
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.folder_id").value(newParentOrganizationFolder.getId()))
+                        .andExpect(jsonPath("$.parent_folder_id").value(parentOrganizationFolder.getId()));
+            }
+
+            @Test
+            void shouldReturn500AndErrorMessageWhenFolderMoveFails() throws Exception {
+                when(folderService.moveOrganizationFolder(any(), any(), any())).thenThrow(new RuntimeException("Failed to move folder"));
+
+                mockMvc.perform(patch("/folder/{folder_id}/organization/{organization_id}/move", newParentOrganizationFolder.getId(), testOrganizaton.getId())
+                                .param("parent_folder_id", parentOrganizationFolder.getId())
+                        )
+                        .andExpect(status().isInternalServerError())
+                        .andExpect(jsonPath("$.error").value("An error occurred while moving the folder"));
             }
         }
     }
