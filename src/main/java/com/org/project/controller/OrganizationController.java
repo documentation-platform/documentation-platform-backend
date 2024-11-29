@@ -282,7 +282,71 @@ public class OrganizationController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-}
+
+    @OrganizationAdmin
+    @GetMapping("/{org_id}/get-settings")
+    public ResponseEntity<Map<String, Object>> getOrganizationSettings(@PathVariable("org_id") String organizationId,HttpServletRequest securedRequest) {
+
+        // Get the user ID from the secured request
+        String userId = (String) securedRequest.getAttribute("user_id");
+
+
+            // Validate if the organization exists
+            Organization organization = organizationRepository.findById(organizationId).orElse(null);
+            if (organization == null) {
+                return new ResponseEntity<>(Map.of("error", "Organization not found"), HttpStatus.NOT_FOUND);
+            }
+
+
+
+            // Fetch invite links for the organization
+            List<Invite> invites = InviteRepository.findByOrganization(organization);
+            List<Map<String, Object>> inviteLinks = invites.stream()
+                    .map(invite -> {
+                        Map<String, Object> inviteInfo = new HashMap<>();
+                        inviteInfo.put("inviteToken", invite.getId());
+
+                        inviteInfo.put("inviteLink", baseUrl + "invite?token=" + invite.getId());
+                        inviteInfo.put("currentCount", invite.getCurrentCount());
+                        inviteInfo.put("maxCount", invite.getMaxCount());
+                        inviteInfo.put("expiresAt", invite.getExpiresAt());
+                        return inviteInfo;
+                    })
+                    .collect(Collectors.toList());
+
+            // Fetch members with their permission levels
+            List<OrganizationUserRelation> userRelations = OrganizationUserRelationRepository.findByOrganizationId(organizationId);
+            List<Map<String, Object>> members = userRelations.stream()
+                    .map(relation -> {
+                        User user = UserRepository.findById(relation.getUserId());
+                        Map<String, Object> memberInfo = new HashMap<>();
+                        memberInfo.put("userId", relation.getUserId());
+                        memberInfo.put("name", user != null ? user.getName() : "Unknown");
+                        memberInfo.put("email", user != null ? user.getEmail() : "Unknown");
+                        memberInfo.put("permissionLevel", OrganizationUtil.getAccessLevel(relation.getAccessId()));
+                        memberInfo.put("joinedAt", relation.getCreatedAt());
+                        return memberInfo;
+                    })
+                    .collect(Collectors.toList());
+
+            // Fetch the relation of the current user with the organization
+            OrganizationUserRelation currentUserRelation = OrganizationUserRelationRepository
+                    .findByUserIdAndOrganizationId(userId, organizationId);
+
+
+            // Prepare the response
+            Map<String, Object> response = new HashMap<>();
+            response.put("organizationName", organization.getName());
+            response.put("currentUserJoinedAt", currentUserRelation.getCreatedAt());
+            response.put("members", members);
+            response.put("inviteLinks", inviteLinks);
+
+            return ResponseEntity.ok(response);
+        }
+
+
+    }
+
 
 
 
