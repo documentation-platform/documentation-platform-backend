@@ -9,6 +9,7 @@ import com.org.project.service.FolderService;
 import com.org.project.test_configs.BaseControllerTest;
 import com.org.project.test_configs.ControllerTest;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,9 @@ public class FolderControllerTest extends BaseControllerTest {
 
     @MockBean
     private FolderService folderService;
+
+    @MockBean
+    private EntityManager entityManager;
 
     private User testUser;
 

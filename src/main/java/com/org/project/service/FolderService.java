@@ -1,9 +1,11 @@
 package com.org.project.service;
 
+import com.org.project.dto.structure.FolderStructureDTO;
 import com.org.project.exception.ParentFolderPermissionException;
 import com.org.project.model.Folder;
 import com.org.project.model.Organization;
 import com.org.project.model.User;
+import com.org.project.repository.FileRepository;
 import com.org.project.repository.FolderRepository;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
@@ -18,6 +20,9 @@ public class FolderService {
 
     @Autowired
     private FolderRepository folderRepository;
+
+    @Autowired
+    private FileRepository fileRepository;
 
     public Folder createUserFolder(String userId, String folderName, @Nullable String parentFolderId) {
         if (parentFolderId != null && !canUserAccessFolder(userId, parentFolderId)) {
@@ -105,6 +110,10 @@ public class FolderService {
         }
 
         return rootFolder;
+    }
+
+    public FolderStructureDTO getFolderStructure(Folder folder) {
+        return new FolderStructureDTO(folder.getId(), folderRepository.findFoldersByParentFolderId(folder.getId()), fileRepository.findFilesByFolderId(folder.getId()));
     }
 
     public Boolean canUserAccessFolder(String userId, String folderId) {
