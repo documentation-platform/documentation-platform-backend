@@ -11,12 +11,10 @@ import com.org.project.service.OrganizationService;
 import com.org.project.test_configs.BaseControllerTest;
 import com.org.project.test_configs.ControllerTest;
 
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -34,9 +32,6 @@ public class DocumentControllerTest extends BaseControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Mock
-    private EntityManager entityManager;
 
     @MockBean
     private DocumentService documentService;

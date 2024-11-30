@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -31,14 +30,14 @@ public class FolderControllerTest extends BaseControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
-    private EntityManager entityManager;
-
     @Autowired
     private ObjectMapper objectMapper;
 
     @MockBean
     private FolderService folderService;
+
+    @MockBean
+    private EntityManager entityManager;
 
     private User testUser;
 
