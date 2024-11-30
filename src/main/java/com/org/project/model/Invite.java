@@ -1,10 +1,6 @@
 package com.org.project.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
@@ -16,11 +12,11 @@ public class Invite {
     @Column(name = "id", length = 36, updatable = false, nullable = false)
     private String id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "access_id", referencedColumnName = "id", nullable = false)
     private Access access;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", referencedColumnName = "id", nullable = false)
     private Organization organization;
 
