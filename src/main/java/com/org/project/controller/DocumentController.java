@@ -37,13 +37,15 @@ public class DocumentController {
     ){
         String userId = (String) request.getAttribute("user_id");
 
+        // TODO: Hitting the database twice in this method, can be optimized
         if (!documentService.canUserViewDocument(userId, documentId)) {
             return ResponseEntity.status(403).body(Map.of("error", "You do not have permission to view this document"));
         }
 
+        String documentName = documentService.getDocumentName(documentId);
         String documentContent = documentService.getDocumentContent(documentId);
 
-        return ResponseEntity.ok(Map.of("content", documentContent));
+        return ResponseEntity.ok(Map.of("name", documentName, "content", documentContent));
     }
 
     @PatchMapping("/{document_id}/content")

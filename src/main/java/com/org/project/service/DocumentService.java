@@ -77,6 +77,16 @@ public class DocumentService {
         return fileContentRelation.getTextContent();
     }
 
+    public String getDocumentName(String documentId) {
+        File file = fileRepository.findById(documentId).orElse(null);
+
+        if (file == null) {
+            throw new RuntimeException("File not found");
+        }
+
+        return file.getName();
+    }
+
     public boolean canUserEditDocument(String userId, String documentId) {
         File file = fileRepository.findById(documentId).orElse(null);
 
