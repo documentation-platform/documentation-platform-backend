@@ -19,15 +19,15 @@ public class File{
     @Column(name = "name")
     private String name;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "folder_id", referencedColumnName = "id")
     private Folder folder;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creation_user_id", referencedColumnName = "id")
     private User creationUser;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_user_id", referencedColumnName = "id", nullable = false)
     private User updatedUser;
 

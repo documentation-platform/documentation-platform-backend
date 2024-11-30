@@ -37,13 +37,16 @@ public class DocumentController {
     ){
         String userId = (String) request.getAttribute("user_id");
 
-        if (!documentService.canUserViewDocument(userId, documentId)) {
+        File document = documentService.getUserDocument(userId, documentId);
+
+        if (document == null) {
             return ResponseEntity.status(403).body(Map.of("error", "You do not have permission to view this document"));
         }
 
+        String documentName = document.getName();
         String documentContent = documentService.getDocumentContent(documentId);
 
-        return ResponseEntity.ok(Map.of("content", documentContent));
+        return ResponseEntity.ok(Map.of("name", documentName, "content", documentContent));
     }
 
     @PatchMapping("/{document_id}/content")

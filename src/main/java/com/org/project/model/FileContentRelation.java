@@ -14,7 +14,7 @@ public class FileContentRelation {
     @Column(name = "file_id", nullable = false, unique = true)
     private String fileId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "file_id", referencedColumnName = "id", insertable = false, updatable = false)
     private File file;
 

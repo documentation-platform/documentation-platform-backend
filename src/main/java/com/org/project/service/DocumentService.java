@@ -43,20 +43,18 @@ public class DocumentService {
     @Autowired
     private EntityManager entityManager;
 
-    public boolean canUserViewDocument(String userId, String documentId) {
-        File file = fileRepository.findById(documentId).orElse(null);
+    public File getUserDocument(String userId, String documentId) {
+        return fileRepository.findById(documentId).filter(file -> {
+            Folder parentFolder = file.getFolder();
 
-        if (file == null) {
-            return false;
-        }
+            if (parentFolder == null) return true;
 
-        Folder parentFolder = file.getFolder();
+            if (parentFolder.getOrganization() != null) {
+                return canUserViewOrganizationDocument(userId, parentFolder.getOrganization().getId());
+            }
 
-        if (parentFolder != null && parentFolder.getOrganization() != null) {
-            return canUserViewOrganizationDocument(userId, parentFolder.getOrganization().getId());
-        }
-
-        return parentFolder.getUser().getId().equals(userId);
+            return parentFolder.getUser() == null || parentFolder.getUser().getId().equals(userId);
+        }).orElse(null);
     }
 
     public boolean canUserViewOrganizationDocument(String userId, String organizationId) {
