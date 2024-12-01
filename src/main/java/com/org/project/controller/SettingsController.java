@@ -25,7 +25,8 @@ public class SettingsController {
     @Autowired
     private OrganizationUserRelationRepository organizationUserRelationRepository;
 
-    @DeleteMapping("/{org_id}/delete-invite-link")
+    @OrganizationAdmin
+    @DeleteMapping("organization/{org_id}/delete-invite-link")
     public ResponseEntity<Map<String, Object>> deleteInviteLink(
             @PathVariable("org_id") String organizationId,
             @RequestParam("token") String inviteToken) {
@@ -42,7 +43,8 @@ public class SettingsController {
         );
     }
 
-    @DeleteMapping("/{org_id}/kick-org-member")
+    @OrganizationAdmin
+    @DeleteMapping("organization/{org_id}/kick-org-member")
     public ResponseEntity<Map<String, Object>> kickOrgMember(
             @PathVariable("org_id") String organizationId,
             @RequestParam("user_id") String userId) {
