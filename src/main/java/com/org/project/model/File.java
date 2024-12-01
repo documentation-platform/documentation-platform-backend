@@ -86,5 +86,11 @@ public class File{
     public Date getUpdatedAt() {
         return updatedAt;
     }
+
+    // This method is used to manually update the updatedAt field since
+    // it won't be updated if the user_id is not changed when updating the document
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }
 
