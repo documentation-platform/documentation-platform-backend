@@ -305,11 +305,11 @@ public class OrganizationController {
                     .map(invite -> {
                         Map<String, Object> inviteInfo = new HashMap<>();
                         inviteInfo.put("inviteToken", invite.getId());
-
                         inviteInfo.put("inviteLink", baseUrl + "invite?token=" + invite.getId());
                         inviteInfo.put("currentCount", invite.getCurrentCount());
                         inviteInfo.put("maxCount", invite.getMaxCount());
                         inviteInfo.put("expiresAt", invite.getExpiresAt());
+                        inviteInfo.put("accessId", invite.getAccess().getId());
                         return inviteInfo;
                     })
                     .collect(Collectors.toList());
@@ -340,7 +340,6 @@ public class OrganizationController {
             response.put("currentUserJoinedAt", currentUserRelation.getCreatedAt());
             response.put("members", members);
             response.put("inviteLinks", inviteLinks);
-
             return ResponseEntity.ok(response);
         }
 
