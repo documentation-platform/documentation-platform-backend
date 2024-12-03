@@ -32,6 +32,8 @@ public class UserController {
         responseBody.put("user_id", user.getId());
         responseBody.put("name", user.getName());
         responseBody.put("email", user.getEmail());
+        responseBody.put("created_at", user.getCreatedAt());
+        responseBody.put("Account Type", user.getProvider());
         return new ResponseEntity<>(responseBody, HttpStatus.OK);
     }
 }
